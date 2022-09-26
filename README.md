@@ -84,25 +84,25 @@ optional arguments:
 ### Example usage
 
 ```bash
-$ python job_queue.py add "python random_sleep.py" -p low
-Adding new job Job(_id=0, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246) ...
-$ python job_queue.py add "python random_sleep.py" -p urgent
-Adding new job Job(_id=1, user=brisa, command="python random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911) ...
-$ python job_queue.py add "python random_sleep.py" -p low
-Adding new job Job(_id=2, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135) ...
-$ python job_queue.py add "python random_sleep.py" -p low
-Adding new job Job(_id=3, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817) ...
+$ python job_queue.py add "python shared_jobs_queue/random_sleep.py" -p low
+Adding new job Job(_id=0, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246) ...
+$ python job_queue.py add "python shared_jobs_queue/random_sleep.py" -p urgent
+Adding new job Job(_id=1, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911) ...
+$ python job_queue.py add "python shared_jobs_queue/random_sleep.py" -p low
+Adding new job Job(_id=2, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135) ...
+$ python job_queue.py add "python shared_jobs_queue/random_sleep.py" -p low
+Adding new job Job(_id=3, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817) ...
 $ python job_queue.py
 Jobs:
-  Job(_id=1, user=brisa, command="python random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911)
-  Job(_id=0, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246)
-  Job(_id=2, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135)
-  Job(_id=3, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817)
+  Job(_id=1, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911)
+  Job(_id=0, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246)
+  Job(_id=2, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135)
+  Job(_id=3, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817)
 $ python job_queue.py remove 0
-Removing job Job(_id=0, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246) ...
+Removing job Job(_id=0, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:05.308246) ...
 $ python job_queue.py
 Jobs:
-  Job(_id=1, user=brisa, command="python random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911)
-  Job(_id=2, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135)
-  Job(_id=3, user=brisa, command="python random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817)
+  Job(_id=1, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.URGENT, timestamp=2022-09-26 17:35:08.842911)
+  Job(_id=2, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:16.710135)
+  Job(_id=3, user=brisa, command="python shared_jobs_queue/random_sleep.py", priority=Priority.LOW, timestamp=2022-09-26 17:35:18.213817)
 ```

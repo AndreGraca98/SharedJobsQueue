@@ -1,0 +1,5 @@
+*.code-workspace
+*.log
+*.pkl
+
+*__pycache__

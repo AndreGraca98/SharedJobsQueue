@@ -9,7 +9,7 @@ def get_server_parser():
         "Server Jobs Queue",
         description="Run jobs from the jobs queue",
     )
-    parser.add_argument("time", type=str, nargs='?',default=1, help="Idle time (s)")
+    parser.add_argument("time", type=int, nargs='?',default=1, help="Idle time (s)")
     return parser
     
 def get_client_parser():

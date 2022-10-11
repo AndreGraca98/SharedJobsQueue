@@ -12,10 +12,10 @@ def run():
     args = get_args(client_args=False)
     sleep_time = args.time
     
-    QUEUE_FILENAME: str = "JOBS_QUEUE.pkl"
-    QUEUE_LOG_FILENAME: str = "JOBS_QUEUE.log"
-    path = Path(QUEUE_FILENAME).resolve()
-    log_path = Path(QUEUE_LOG_FILENAME).resolve()
+    QUEUE_FILENAME:str = ".JOBS_QUEUE.pkl"
+    QUEUE_LOG_FILENAME:str = ".JOBS_QUEUE.log"
+    path = (Path.home() / Path(QUEUE_FILENAME)).resolve()
+    log_path = (Path.home() / Path(QUEUE_LOG_FILENAME)).resolve()
 
     idle_state = False
     while True:

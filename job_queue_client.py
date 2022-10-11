@@ -6,9 +6,9 @@ from shared_jobs_queue.tools import fpkl
 
 
 def run():
-    QUEUE_FILENAME: str = "JOBS_QUEUE.pkl"
+    QUEUE_FILENAME: str = ".JOBS_QUEUE.pkl"
+    path = (Path.home() / Path(QUEUE_FILENAME)).resolve()
 
-    path = Path(QUEUE_FILENAME).resolve()
 
     try:
         queue = fpkl.read(Path(path).resolve())

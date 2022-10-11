@@ -15,15 +15,19 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 ## Environment
 
 ```bash
-cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git SharedJobsQueue_2
+folder_name=SharedJobsQueue_2
+cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name && cd $folder_name
 
 env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
 
 # Use an alias to call the server or client code from anywhere
-alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue_2/job_queue_client.py'
-alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue_2/job_queue_server.py'
+echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
+echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
+
+
+
 ```
 
 ## Run on the server side

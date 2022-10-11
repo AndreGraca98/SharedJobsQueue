@@ -5,12 +5,14 @@ else
 fi
 
 
+folder_name=$HOME/SharedJobsQueue
 
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p high
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py"
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p urgent
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py"
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p urgent
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p low
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p 1
-python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$HOME/SharedJobsQueue/examples/random_sleep.py" -p low
+
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p high
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py"
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p urgent
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py"
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p urgent
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p low
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p 1
+python $folder_name/job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "$folder_name/examples/random_sleep.py" -p low

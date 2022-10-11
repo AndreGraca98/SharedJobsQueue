@@ -1,4 +1,10 @@
-env_name=jobqueue
+if [ $# -eq 0 ]; then
+    env_name=jobqueue
+else
+    env_name=$1
+fi
+
+
 
 python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "SharedJobsQueue/examples/random_sleep.py" -p high
 python job_queue_client.py add "$HOME/anaconda3/envs/$env_name/bin/python" "SharedJobsQueue/examples/random_sleep.py"

@@ -1,7 +1,7 @@
 # Job queues
 
 Add and remove jobs to a queue that can be shared by multiple users to run
-scripts with different priority levels. Uses os.system to run the commands.
+scripts with different priority levels. Uses subprocess.run to run the commands.
 
 - [Job queues](#job-queues)
   - [Environment](#environment)

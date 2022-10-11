@@ -11,18 +11,20 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
     - [Add job to queue](#add-job-to-queue)
     - [Remove job from queue](#remove-job-from-queue)
     - [Example usage](#example-usage)
+  - [TODO](#todo)
 
 ## Environment
 
 ```bash
-folder_name=SharedJobsQueue_2
+folder_name=SharedJobsQueue
 cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name && cd $folder_name
 
 env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
 
-# Use an alias to call the server or client code from anywhere
+# Use an alias to call the server or client code from 
+# anywhere instead of using <python job_queue_client.py> and <python job_queue_server.py>
 echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
 echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
 
@@ -167,3 +169,7 @@ Finished code: CompletedProcess(args=['/home/brisa/anaconda3/envs/jobqueue/bin/p
 2022-10-11 22:35:58.234393 :INFO: Idle ...
 
 ```
+
+## TODO
+
+[ ] Make install easier

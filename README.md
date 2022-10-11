@@ -15,14 +15,21 @@ scripts with different priority levels. Uses os.system to run the commands.
 ## Environment
 
 ```bash
-conda create -n shared_queue python=3.7 -y
-conda activate shared_queue
+cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git SharedJobsQueue_2
+
+env_name=jobqueue
+conda create -n $env_name python=3.7 -y
+conda activate $env_name
+
+# Use an alias to call the server or client code from anywhere
+alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue_2/job_queue_client.py'
+alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue_2/job_queue_server.py'
 ```
 
 ## Run on the server side
 
 ```bash
-python job_runner.py [TIME_IN_SECONDS]
+python job_queue_server.py [TIME_IN_SECONDS]
 ```
 
 ```text
@@ -42,7 +49,7 @@ optional arguments:
 ### View job queue
 
 ```bash
-python job_queue.py
+python job_queue_client.py
 ```
 
 ```text
@@ -63,7 +70,7 @@ optional arguments:
 ### Add job to queue
 
 ```bash
-python job_queue.py add [ENV] [COMMAND] -p [PRIORITY]
+python job_queue_client.py add [ENV] [COMMAND] -p [PRIORITY]
 ```
 
 ```text
@@ -83,7 +90,7 @@ optional arguments:
 ### Remove job from queue
 
 ```bash
-python job_queue.py remove [ID]
+python job_queue_client.py remove [ID]
 ```
 
 ```text
@@ -102,23 +109,23 @@ Client Side
 
 ```bash
 # Add bash command
-$ python job_queue.py add /bin/bash bash_file.sh
+$ python job_queue_client.py add /bin/bash bash_file.sh
 Adding new job Job(_id=0, user=brisa, env="/bin/bash", command="examples/bash_file.sh", priority=Priority.MEDIUM, timestamp=2022-10-11 22:31:47.430254) ...
 
 # Add python command
-$ python job_queue.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py
+$ python job_queue_client.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py
 Adding new job Job(_id=1, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-11 22:32:18.120021) ...
 
 # Add python command with urgent priority
-$ python job_queue.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py  -p 4
+$ python job_queue_client.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py  -p 4
 Adding new job Job(_id=2, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.URGENT, timestamp=2022-10-11 22:32:31.319041) ...
 
 # Add python command with low priority
-$ python job_queue.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py  -p 1
+$ python job_queue_client.py add /home/brisa/anaconda3/envs/shared_queue/bin/python examples/random_sleep.py  -p 1
 Adding new job Job(_id=3, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.LOW, timestamp=2022-10-11 22:33:02.852515) ...
 
 # Show current job queue
-$ python job_queue.py
+$ python job_queue_client.py
 Jobs:
   Job(_id=2, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.URGENT, timestamp=2022-10-11 22:32:31.319041)
   Job(_id=0, user=brisa, env="/bin/bash", command="examples/bash_file.sh", priority=Priority.MEDIUM, timestamp=2022-10-11 22:31:47.430254)
@@ -126,11 +133,11 @@ Jobs:
   Job(_id=3, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.LOW, timestamp=2022-10-11 22:33:02.852515)
 
 # Remove job with id=1 from queue
-$ python job_queue.py remove 1
+$ python job_queue_client.py remove 1
 Removing job Job(_id=1, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-11 22:32:18.120021) ...
 
 # Show current job queue
-$ python job_queue.py
+$ python job_queue_client.py
 Jobs:
   Job(_id=2, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.URGENT, timestamp=2022-10-11 22:32:31.319041)
   Job(_id=0, user=brisa, env="/bin/bash", command="examples/bash_file.sh", priority=Priority.MEDIUM, timestamp=2022-10-11 22:31:47.430254)
@@ -142,7 +149,7 @@ Server Side
 
 ```bash
 # Start running jobs with idle_time=1 second
-$ python job_runner.py 1
+$ python job_queue_server.py 1
 Starting job: Job(_id=2, user=brisa, env="/home/brisa/anaconda3/envs/shared_queue/bin/python", command="examples/random_sleep.py", priority=Priority.URGENT, timestamp=2022-10-11 22:32:31.319041)
 Sleeping 4.00s
 Finished code: CompletedProcess(args=['/home/brisa/anaconda3/envs/shared_queue/bin/python', 'examples/random_sleep.py'], returncode=0)

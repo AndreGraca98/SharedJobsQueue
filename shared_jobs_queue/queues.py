@@ -5,7 +5,6 @@ from typing import List
 from .jobs import Job, Priority
 
 
-
 class JobsQueue:
     jobs: List[Job]
 
@@ -14,9 +13,17 @@ class JobsQueue:
 
     def add(self, args: argparse.Namespace) -> None:
         # Adds new job
+        _priority = args.priority
+        if _priority.isnumeric():
+            assert int(_priority) in list(range(1, len(Priority)+1, 1)), f'Priority not available. Expected: {Priority.__members__}. Got: {_priority}'
+            priority = Priority(int(_priority))
+        else:
+            priority = Priority[_priority.upper()]
+            
         new_job = Job(
-            priority=Priority[args.priority.upper()],
-            command=args.command,
+            priority=priority,
+            env=args.env,
+            command=' '.join(args.command),
             _id=self.get_new_valid_id(),
         )
 

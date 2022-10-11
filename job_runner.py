@@ -1,16 +1,19 @@
 import datetime
-import os
+import subprocess
 import time
 from pathlib import Path
 
+from shared_jobs_queue.args import get_args
 from shared_jobs_queue.queues import JobsQueue
 from shared_jobs_queue.tools import fpkl, ftext
 
 
-def run(sleep_time: float = 60):
+def run():
+    args = get_args(client_args=False)
+    sleep_time = args.time
+    
     QUEUE_FILENAME: str = "JOBS_QUEUE.pkl"
     QUEUE_LOG_FILENAME: str = "JOBS_QUEUE.log"
-
     path = Path(QUEUE_FILENAME).resolve()
     log_path = Path(QUEUE_LOG_FILENAME).resolve()
 
@@ -45,12 +48,14 @@ def run(sleep_time: float = 60):
             idle_state = False
 
         # Log
-        print("Running job:", job)
-        ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Running job: {job}\n")
+        print("Starting job:", job)
+        ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job}\n")
 
         # Update queue
         fpkl.write(path, queue)
-        code = os.system(job.command)
+        
+        # Run job
+        code = subprocess.run([job.env, job.command])
 
         # Log
         print("Finished code:", code)

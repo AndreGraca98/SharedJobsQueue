@@ -16,7 +16,7 @@ def run():
         # If file does not exist create new empty queue
         queue = JobsQueue()
 
-    args = get_args()
+    args = get_args(client_args=True)
     args.operation(queue, args)
 
     # Update Queue

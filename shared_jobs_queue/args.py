@@ -4,9 +4,17 @@ from typing import List
 from .queues import JobsQueue
 
 
-def get_parser():
+def get_server_parser():
     parser = argparse.ArgumentParser(
-        "Jobs Queue",
+        "Server Jobs Queue",
+        description="Run jobs from the jobs queue",
+    )
+    parser.add_argument("time", type=str, nargs='?',default=1, help="Idle time (s)")
+    return parser
+    
+def get_client_parser():
+    parser = argparse.ArgumentParser(
+        "Client Jobs Queue",
         description="Add/Remove jobs to/from the jobs queue. If no options provided show current jobs on queue.",
     )
     parser.set_defaults(operation=JobsQueue.show)
@@ -15,13 +23,15 @@ def get_parser():
 
     parser_add.add_argument(
         "-p",
+        "-P",
         "--priority",
         default="normal",
         type=str,
-        help="Command priority. low, medium/normal, high or urgent",
+        dest='priority',
+        help="Command priority. low (1), medium/normal (2), high (3) or urgent (4)",
     )
-    parser_add.add_argument("command", type=str, help="Command to run")  # arg
-    # parser_add.add_argument("-c","--command", type=str, help="Command") # kwarg
+    parser_add.add_argument("env", type=str, help="Environment to run the command")  
+    parser_add.add_argument("command", type=str, action='store', nargs='+', help="Command to run")
 
     parser_add.set_defaults(operation=JobsQueue.add)
 
@@ -32,16 +42,22 @@ def get_parser():
     return parser
 
 
-def get_args():
-    return get_parser().parse_args()
+def get_args(client_args:bool=True):
+    if client_args:
+        return get_client_parser().parse_args()
+    return get_server_parser().parse_args()
 
 
-def get_args_from_str(_str: str):
-    return get_parser().parse_args(_str.split())
+def get_args_from_str(_str: str, client_args:bool=True):
+    if client_args:
+        return get_client_parser().parse_args(_str.split())
+    return get_server_parser().parse_args(_str.split())
 
 
-def get_args_from_list(_list: List):
-    return get_parser().parse_args(_list)
+def get_args_from_list(_list: List, client_args:bool=True):
+    if client_args:
+        return get_client_parser().parse_args(_list)
+    return get_server_parser().parse_args(_list)
 
 
 # ENDFILE

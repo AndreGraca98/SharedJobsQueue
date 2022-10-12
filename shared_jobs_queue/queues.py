@@ -81,7 +81,19 @@ class JobsQueue:
         idx = [job._id == args.id for job in self.jobs].index(True)
             
         if args.attr in ['command', 'priority']:
-            setattr(self.jobs[idx], args.attr, Priority(int(args.new_value)) if args.attr == 'priority' else args.new_value)
+            if args.attr == 'priority':
+                if args.new_value.isnumeric():
+                    assert int(args.new_value) in list(range(1, len(Priority)+1, 1)), f'Priority not available. Expected: {Priority.__members__}. Got: {args.new_value}'
+                    new_value = Priority(int(args.new_value))
+                else:
+                    new_value = Priority[args.new_value.upper()]
+            else:
+                new_value = args.new_value
+            
+            print(f'Updating job(id={idx}, ...) . {args.attr}={getattr(self.jobs[idx],args.attr)} -> {args.attr}={new_value}')
+            setattr(self.jobs[idx], args.attr, new_value)
+            
+            
         else:
             print(f'Job has no attribute < {args.attr} >')
         

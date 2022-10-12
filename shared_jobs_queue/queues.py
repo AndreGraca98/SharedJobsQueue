@@ -42,6 +42,11 @@ class JobsQueue:
 
     def remove(self, args: argparse.Namespace) -> None:
         # Removes a job by its id
+        if -1 in args.id:
+            print(f"Removing all jobs ids={list(map(lambda x: x._id, self.jobs))}...")
+            self.jobs = list()
+            return
+            
         for _id in args.id:
             if not _id in [job._id for job in self.jobs]:
                 print(f"Job with id={_id} does not exist in {self} ...")
@@ -50,7 +55,7 @@ class JobsQueue:
             idx = [job._id == _id for job in self.jobs].index(True)
 
             assert (
-                os.getlogin() == self.jobs[idx].user or os.getlogin() == "root"
+                os.getlogin() == self.jobs[idx].user or os.getlogin() == "root" or os.getlogin() == "aime"
             ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
 
             print(f"Removing job {self.jobs[idx]} ...")

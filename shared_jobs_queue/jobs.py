@@ -40,7 +40,7 @@ class Job:
         elif lvl == 2:
             return self._str_2
         else:
-            return self._str_3
+            return f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{self.command[:lvl*40]}", priority={self.priority.name}, timestamp={self.timestamp})'
 
     @property
     def _str_0(self):

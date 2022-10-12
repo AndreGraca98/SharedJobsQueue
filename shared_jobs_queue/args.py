@@ -19,8 +19,8 @@ def get_client_parser():
     )
     parser.set_defaults(operation=JobsQueue.show)
     subparser = parser.add_subparsers()
-    parser_add = subparser.add_parser("add", help="Add a task to the queue")
 
+    parser_add = subparser.add_parser("add", help="Add a task to the queue")
     parser_add.add_argument(
         "-p",
         "-P",
@@ -32,12 +32,17 @@ def get_client_parser():
     )
     parser_add.add_argument("env", type=str, help="Environment to run the command")  
     parser_add.add_argument("command", type=str, action='store', nargs='+', help="Command to run")
-
     parser_add.set_defaults(operation=JobsQueue.add)
 
     parser_remove = subparser.add_parser("remove", help="Remove a task from the queue")
     parser_remove.add_argument("id", type=int, action='store', nargs='+',help="Job id to remove from the queue")
     parser_remove.set_defaults(operation=JobsQueue.remove)
+
+    parser_update = subparser.add_parser("update", help="Updates a task from the queue")
+    parser_update.add_argument("id", type=int, help="Job id to update from the queue")
+    parser_update.add_argument("attr", type=str, help="Job attribute to change")
+    parser_update.add_argument("new_value", type=str, help="Job attribute new value")
+    parser_update.set_defaults(operation=JobsQueue.update)
 
     return parser
 

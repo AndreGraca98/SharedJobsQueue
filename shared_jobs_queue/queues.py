@@ -44,7 +44,7 @@ class JobsQueue:
     def remove(self, args: argparse.Namespace) -> None:
         # Removes a job by its id
         for _id in args.id:
-            if not int(_id) in [int(job._id) for job in self.jobs]:
+            if not _id in [job._id for job in self.jobs]:
                 print(f"Job with id={_id} does not exist in {self} ...")
                 continue
 
@@ -68,6 +68,19 @@ class JobsQueue:
 
     def show(self, *args, **kwargs):
         print(self)
+        
+    def update(self, args: argparse.Namespace):
+        if not args.id in [job._id for job in self.jobs]:
+            print(f"Job with id={args.id} does not exist in {self} ...")
+            return
+            
+        idx = [job._id == args.id for job in self.jobs].index(True)
+            
+        if args.attr in ['env', 'command', 'priority']:
+            setattr(self.jobs[idx], args.attr, Priority(int(args.new_value)) if args.attr == 'priority' else args.new_value)
+        else:
+            print(f'Job has no attribute < {args.attr} >')
+        
 
     def __str__(self) -> str:
         return "Jobs:\n  " + "\n  ".join(

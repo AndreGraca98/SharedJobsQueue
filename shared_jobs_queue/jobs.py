@@ -33,26 +33,22 @@ class Job:
         return self._str_lvl_(self.verbose_lvl)
     
     def _str_lvl_(self, lvl):
-        if lvl <= 0:
-            return self._str_0
+        cmd_str=self.command[:lvl*30]
+        if len(cmd_str) != len(self.command):
+            cmd_str+='[...]'
+        if lvl < 0:
+            return self._full_str_
+        elif lvl == 0:
+            return  f'{self.__class__.__name__}(id={self._id}, priority={self.priority.value}, timestamp={self.timestamp:%m/%d-%H:%M})'
         elif lvl == 1:
-            return self._str_1
+            return  f'{self.__class__.__name__}(id={self._id}, command="{cmd_str}", priority={self.priority.name}, timestamp={self.timestamp:%m/%d-%H:%M})'
         elif lvl == 2:
-            return self._str_2
+            return  f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{cmd_str}", priority={self.priority.name}, timestamp={self.timestamp:%m/%d/%Y-%H:%M:%S})'
         else:
-            return f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{self.command[:lvl*40]}", priority={self.priority.name}, timestamp={self.timestamp})'
+            return f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{cmd_str}", priority={self.priority.name}, timestamp={self.timestamp})'
 
     @property
-    def _str_0(self):
-        return f'{self.__class__.__name__}(id={self._id}, priority={self.priority.value}, timestamp={self.timestamp:%m/%d-%H:%M})'
-    @property
-    def _str_1(self):
-        return f'{self.__class__.__name__}(id={self._id}, command="{self.command[:10]} [...]", priority={self.priority.name}, timestamp={self.timestamp:%m/%d-%H:%M})'
-    @property
-    def _str_2(self):
-        return f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{self.command[:80]} [...]", priority={self.priority.name}, timestamp={self.timestamp:%m/%d/%Y-%H:%M:%S})'
-    @property
-    def _str_3(self):
+    def _full_str_(self):
         return f'{self.__class__.__name__}(id={self._id}, user={self.user}, command="{self.command}", priority={self.priority.name}, timestamp={self.timestamp})'
     
     

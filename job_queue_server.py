@@ -49,8 +49,8 @@ def run():
                 idle_state = False
 
             # Log
-            print("Starting job:", job._str_3)
-            ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job._str_3}\n")
+            print("Starting job:", job._full_str_)
+            ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job._full_str_}\n")
 
             # Update queue
             fpkl.write(path, queue)

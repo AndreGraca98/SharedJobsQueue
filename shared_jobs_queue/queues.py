@@ -43,19 +43,20 @@ class JobsQueue:
 
     def remove(self, args: argparse.Namespace) -> None:
         # Removes a job by its id
-        if not int(args.id) in [int(job._id) for job in self.jobs]:
-            print(f"Job does not exist in {self} ...")
-            return
+        for _id in args.id:
+            if not int(_id) in [int(job._id) for job in self.jobs]:
+                print(f"Job with id={_id} does not exist in {self} ...")
+                continue
 
-        idx = [job._id == args.id for job in self.jobs].index(True)
+            idx = [job._id == _id for job in self.jobs].index(True)
 
-        assert (
-            os.getlogin() == self.jobs[idx].user or os.getlogin() == "root"
-        ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
+            assert (
+                os.getlogin() == self.jobs[idx].user or os.getlogin() == "root"
+            ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
 
-        print(f"Removing job {self.jobs[idx]} ...")
+            print(f"Removing job {self.jobs[idx]} ...")
 
-        self.jobs.pop(idx)
+            self.jobs.pop(idx)
 
     def get_next_job(self) -> Job:
         # Get urgent jobs first

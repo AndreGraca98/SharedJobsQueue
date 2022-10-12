@@ -36,7 +36,7 @@ def get_client_parser():
     parser_add.set_defaults(operation=JobsQueue.add)
 
     parser_remove = subparser.add_parser("remove", help="Remove a task from the queue")
-    parser_remove.add_argument("id", type=int, help="Job id to remove from the queue")
+    parser_remove.add_argument("id", type=int, action='store', nargs='+',help="Job id to remove from the queue")
     parser_remove.set_defaults(operation=JobsQueue.remove)
 
     return parser

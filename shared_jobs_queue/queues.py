@@ -22,7 +22,6 @@ class JobsQueue:
             
         new_job = Job(
             priority=priority,
-            env=args.env,
             command=' '.join(args.command),
             _id=self.get_new_valid_id(),
         )
@@ -76,7 +75,7 @@ class JobsQueue:
             
         idx = [job._id == args.id for job in self.jobs].index(True)
             
-        if args.attr in ['env', 'command', 'priority']:
+        if args.attr in ['command', 'priority']:
             setattr(self.jobs[idx], args.attr, Priority(int(args.new_value)) if args.attr == 'priority' else args.new_value)
         else:
             print(f'Job has no attribute < {args.attr} >')

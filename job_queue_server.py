@@ -56,7 +56,6 @@ def run():
             fpkl.write(path, queue)
             
             # Run job
-            command, *args = job.command.split()
             code = subprocess.run(job.command, shell=True)
             # code = subprocess.run(f'{job.env} {job.command}', shell=True)
             # code = subprocess.run([ job.env, command, *args])

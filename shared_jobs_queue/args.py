@@ -30,7 +30,6 @@ def get_client_parser():
         dest='priority',
         help="Command priority. low (1), medium/normal (2), high (3) or urgent (4)",
     )
-    parser_add.add_argument("env", type=str, help="Environment to run the command")  
     parser_add.add_argument("command", type=str, action='store', nargs='+', help="Command to run")
     parser_add.set_defaults(operation=JobsQueue.add)
 

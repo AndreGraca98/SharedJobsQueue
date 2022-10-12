@@ -44,19 +44,16 @@ class JobsQueue:
 
     def remove(self, args: argparse.Namespace) -> None:
         # Removes a job by its id
-        for job in self.jobs:
-            job.verbose_lvl = args.verbose
-            
         if -1 in args.id:
             if args.verbose > 0:
-                print(f"Removing all jobs ids={list(map(lambda x: x._id, self.jobs))}...")
+                print(f"Removing all jobs with ids={list(map(lambda x: x._id, self.jobs))}...")
             self.jobs = list()
             return
             
         for _id in args.id:
             if not _id in [job._id for job in self.jobs]:
                 if args.verbose > 0:
-                    print(f"Job with id={_id} does not exist in {self} ...")
+                    print(f"Job with id={_id} does not exist in {self._str_lvl(args.verbose)} ...")
                 continue
 
             idx = [job._id == _id for job in self.jobs].index(True)
@@ -66,7 +63,7 @@ class JobsQueue:
             ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
 
             if args.verbose > 0:
-                print(f"Removing job {self.jobs[idx]} ...")
+                print(f"Removing job {self.jobs[idx]._str_lvl_(args.verbose)} ...")
 
             self.jobs.pop(idx)
 
@@ -79,14 +76,12 @@ class JobsQueue:
         return self.jobs.pop(0)
 
     def show(self, args, **kwargs):
-        for job in self.jobs:
-            job.verbose_lvl = args.verbose
-        print(self)
+        print(self._str_lvl(args.verbose))
         
     def update(self, args: argparse.Namespace):
         if not args.id in [job._id for job in self.jobs]:
             if args.verbose > 0:
-                print(f"Job with id={args.id} does not exist in {self} ...")
+                print(f"Job with id={args.id} does not exist in {self._str_lvl(args.verbose)} ...")
             return
             
         idx = [job._id == args.id for job in self.jobs].index(True)
@@ -102,9 +97,9 @@ class JobsQueue:
                 new_value = args.new_value
             
             job=self.jobs[idx]
-            job.verbose_lvl=args.verbose
-            print(f'Updating {job} . {args.attr}={getattr(job,args.attr)} -> {args.attr}={new_value}')
-            setattr(self.jobs[idx], args.attr, new_value)
+
+            print(f'Updating {job._str_lvl_(args.verbose)} . {args.attr}={getattr(job,args.attr)} -> {args.attr}={new_value}')
+            setattr(job, args.attr, new_value)
             
             
         else:
@@ -116,6 +111,12 @@ class JobsQueue:
         return "Jobs:\n  " + "\n  ".join(
             [str(job) for job in sorted(self.jobs, reverse=True)]
         )
+        
+    def _str_lvl(self, lvl):
+        for job in self.jobs:
+            job.verbose_lvl = lvl
+            
+        return self
 
     __repr__ = __str__
 

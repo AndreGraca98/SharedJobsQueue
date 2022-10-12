@@ -49,8 +49,8 @@ def run():
                 idle_state = False
 
             # Log
-            print("Starting job:", job)
-            ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job}\n")
+            print("Starting job:", job._str_3)
+            ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job._str_3}\n")
 
             # Update queue
             fpkl.write(path, queue)
@@ -61,7 +61,7 @@ def run():
             # Log
             print("Finished code:", code)
             ftext.append(
-                log_path, f"{datetime.datetime.now()} : {'SUCCSSESS' if code.returncode == 0 else 'ERROR'} : {code} \n"
+                log_path, f"{datetime.datetime.now()} : {'SUCCESS' if code.returncode == 0 else 'ERROR'} : {code} \n"
             )
             
         except KeyboardInterrupt:

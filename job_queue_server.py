@@ -55,12 +55,13 @@ def run():
         fpkl.write(path, queue)
         
         # Run job
-        code = subprocess.run([job.env, job.command])
+        command, *args = job.command.split()
+        code = subprocess.run([job.env, command, *args])
 
         # Log
         print("Finished code:", code)
         ftext.append(
-            log_path, f"{datetime.datetime.now()} :INFO: Finished code: {code}\n"
+            log_path, f"{datetime.datetime.now()} : {'SUCCSSESS' if code.returncode == 0 else 'ERROR'} : {code} \n"
         )
 
 

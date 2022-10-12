@@ -10,6 +10,7 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
     - [View job queue](#view-job-queue)
     - [Add job to queue](#add-job-to-queue)
     - [Remove job from queue](#remove-job-from-queue)
+    - [Update job from queue](#update-job-from-queue)
     - [Example usage](#example-usage)
   - [TODO](#todo)
 
@@ -68,28 +69,32 @@ python job_queue_client.py
 ```
 
 ```text
-usage: Client Jobs Queue [-h] {add,remove} ...
+usage: Client Jobs Queue [-h] [-v [VERBOSE]] {add,remove,update} ...
 
 Add/Remove jobs to/from the jobs queue. If no options provided show current
 jobs on queue.
 
 positional arguments:
-  {add,remove}
-    add         Add a task to the queue
-    remove      Remove a task from the queue
+  {add,remove,update}
+    add                 Add a task to the queue
+    remove              Remove a task from the queue
+    update              Updates a task from the queue
 
 optional arguments:
-  -h, --help    show this help message and exit
+  -h, --help            show this help message and exit
+  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
+                        Verbose
 ```
 
 ### Add job to queue
 
 ```bash
-python job_queue_client.py add [ENV] [COMMAND] -p [PRIORITY]
+python job_queue_client.py add [COMMAND] -p [PRIORITY]
 ```
 
 ```text
-usage: Client Jobs Queue add [-h] [-p PRIORITY] command [command ...]
+usage: Client Jobs Queue add [-h] [-p PRIORITY] [-v [VERBOSE]]
+                             command [command ...]
 
 positional arguments:
   command               Command to run
@@ -99,22 +104,47 @@ optional arguments:
   -p PRIORITY, -P PRIORITY, --priority PRIORITY
                         Command priority. low (1), medium/normal (2), high (3)
                         or urgent (4)
+  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
+                        Verbose
 ```
 
 ### Remove job from queue
 
 ```bash
-python job_queue_client.py remove [ID]
+python job_queue_client.py remove [ID_0 ... ID_n]
 ```
 
 ```text
-usage: Client Jobs Queue remove [-h] id
+usage: Client Jobs Queue remove [-h] [-v [VERBOSE]] id [id ...]
 
 positional arguments:
-  id          Job ids to remove from the queue
+  id                    Job ids to remove from the queue. If -1 remove all
+                        jobs
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help            show this help message and exit
+  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
+                        Verbose
+```
+
+### Update job from queue
+
+```bash
+python job_queue_client.py update [ID] [ATTR] [NEW_VALUE]
+```
+
+```text
+usage: Client Jobs Queue update [-h] [-v [VERBOSE]] id attr new_value
+
+positional arguments:
+  id                    Job id to update from the queue
+  attr                  Job attribute to change
+  new_value             Job attribute new value
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
+                        Verbose
 ```
 
 ### Example usage

@@ -24,9 +24,11 @@ class JobsQueue:
             priority=priority,
             command=' '.join(args.command),
             _id=self.get_new_valid_id(),
+            verbose_lvl=args.verbose
         )
 
-        print(f"Adding new job {new_job} ...")
+        if args.verbose > 0:
+            print(f"Adding new job {new_job}")
 
         self.jobs.append(new_job)
 
@@ -42,14 +44,19 @@ class JobsQueue:
 
     def remove(self, args: argparse.Namespace) -> None:
         # Removes a job by its id
+        for job in self.jobs:
+            job.verbose_lvl = args.verbose
+            
         if -1 in args.id:
-            print(f"Removing all jobs ids={list(map(lambda x: x._id, self.jobs))}...")
+            if args.verbose > 0:
+                print(f"Removing all jobs ids={list(map(lambda x: x._id, self.jobs))}...")
             self.jobs = list()
             return
             
         for _id in args.id:
             if not _id in [job._id for job in self.jobs]:
-                print(f"Job with id={_id} does not exist in {self} ...")
+                if args.verbose > 0:
+                    print(f"Job with id={_id} does not exist in {self} ...")
                 continue
 
             idx = [job._id == _id for job in self.jobs].index(True)
@@ -58,7 +65,8 @@ class JobsQueue:
                 os.getlogin() == self.jobs[idx].user or os.getlogin() == "root" or os.getlogin() == "aime"
             ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
 
-            print(f"Removing job {self.jobs[idx]} ...")
+            if args.verbose > 0:
+                print(f"Removing job {self.jobs[idx]} ...")
 
             self.jobs.pop(idx)
 
@@ -70,12 +78,15 @@ class JobsQueue:
 
         return self.jobs.pop(0)
 
-    def show(self, *args, **kwargs):
+    def show(self, args, **kwargs):
+        for job in self.jobs:
+            job.verbose_lvl = args.verbose
         print(self)
         
     def update(self, args: argparse.Namespace):
         if not args.id in [job._id for job in self.jobs]:
-            print(f"Job with id={args.id} does not exist in {self} ...")
+            if args.verbose > 0:
+                print(f"Job with id={args.id} does not exist in {self} ...")
             return
             
         idx = [job._id == args.id for job in self.jobs].index(True)
@@ -90,12 +101,15 @@ class JobsQueue:
             else:
                 new_value = args.new_value
             
-            print(f'Updating job(id={idx}, ...) . {args.attr}={getattr(self.jobs[idx],args.attr)} -> {args.attr}={new_value}')
+            job=self.jobs[idx]
+            job.verbose_lvl=args.verbose
+            print(f'Updating {job} . {args.attr}={getattr(job,args.attr)} -> {args.attr}={new_value}')
             setattr(self.jobs[idx], args.attr, new_value)
             
             
         else:
-            print(f'Job has no attribute < {args.attr} >')
+            if args.verbose > 0:
+                print(f'Job has no attribute < {args.attr} >')
         
 
     def __str__(self) -> str:

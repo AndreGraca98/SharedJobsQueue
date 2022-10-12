@@ -57,7 +57,13 @@ def run():
             
             # Run job
             command, *args = job.command.split()
-            code = subprocess.run([job.env, command, *args])
+            code = subprocess.run(job.command, shell=True)
+            # code = subprocess.run(f'{job.env} {job.command}', shell=True)
+            # code = subprocess.run([ job.env, command, *args])
+            # code = subprocess.run([job.env, command, *args])
+            # code = subprocess.run([*f"screen -S job_screen_{job._id} -dm bash -c".split(), job.env, command, *args])
+            # code = subprocess.run(f'screen -S job_screen_{job._id} -dm bash -c "{job.env} {job.command}"', shell=True)
+            # code = subprocess.run(f'screen -S job_screen_{job._id} -dm bash -c "{job.command}"', shell=True)
 
             # Log
             print("Finished code:", code)

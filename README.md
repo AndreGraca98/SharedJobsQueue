@@ -25,8 +25,17 @@ conda activate $env_name
 
 # Use an alias to call the server or client code from 
 # anywhere instead of using <python job_queue_client.py> and <python job_queue_server.py>
-echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
-echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
+if alias JobQueueClient >/dev/null 2>&1; then 
+  echo "alias JobQueueClient already exists in ~/.bashrc"
+else
+  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
+fi
+if alias JobQueueServer >/dev/null 2>&1; then 
+  echo "alias JobQueueClient already exists in ~/.bashrc"
+else
+  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
+fi
+
 
 
 

@@ -7,10 +7,10 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
   - [Environment](#environment)
   - [Run on the server side](#run-on-the-server-side)
   - [Run on the user side](#run-on-the-user-side)
-    - [View job queue](#view-job-queue)
-    - [Add job to queue](#add-job-to-queue)
-    - [Remove job from queue](#remove-job-from-queue)
-    - [Update job from queue](#update-job-from-queue)
+    - [1. View job queue](#1-view-job-queue)
+    - [2. Add job to queue](#2-add-job-to-queue)
+    - [3. Remove job from queue](#3-remove-job-from-queue)
+    - [4. Update job from queue](#4-update-job-from-queue)
     - [Example usage](#example-usage)
   - [TODO](#todo)
 
@@ -32,7 +32,7 @@ else
   echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
 fi
 if alias JobQueueServer >/dev/null 2>&1; then 
-  echo "alias JobQueueClient already exists in ~/.bashrc"
+  echo "alias JobQueueServer already exists in ~/.bashrc"
 else
   echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
 fi
@@ -43,6 +43,8 @@ fi
 ```
 
 ## Run on the server side
+
+[JobQueueServer](/job_queue_server.py#L11)
 
 ```bash
 python job_queue_server.py [TIME_IN_SECONDS]
@@ -62,7 +64,11 @@ optional arguments:
 
 ## Run on the user side
 
-### View job queue
+[JobQueueClient](/job_queue_client.py#L20)
+
+### 1. View job queue
+
+[JobQueueClient -vvv](/shared_jobs_queue/queues.py#L78)
 
 ```bash
 python job_queue_client.py
@@ -86,7 +92,9 @@ optional arguments:
                         Verbose
 ```
 
-### Add job to queue
+### 2. Add job to queue
+
+[JobQueueClient add ...](/shared_jobs_queue/queues.py#L14)
 
 ```bash
 python job_queue_client.py add [COMMAND] -p [PRIORITY]
@@ -108,7 +116,9 @@ optional arguments:
                         Verbose
 ```
 
-### Remove job from queue
+### 3. Remove job from queue
+
+[JobQueueClient remove ...](/shared_jobs_queue/queues.py#L45)
 
 ```bash
 python job_queue_client.py remove [ID_0 ... ID_n]
@@ -127,7 +137,9 @@ optional arguments:
                         Verbose
 ```
 
-### Update job from queue
+### 4. Update job from queue
+
+[JobQueueClient update ...](/shared_jobs_queue/queues.py#L81)
 
 ```bash
 python job_queue_client.py update [ID] [ATTR] [NEW_VALUE]
@@ -223,4 +235,5 @@ $ JobQueueServer 1
 
 ## TODO
 
-[ ] Make install easier
+  [ ] Make install easier
+  [ ] In version 2.0 make it so various users can use the queue

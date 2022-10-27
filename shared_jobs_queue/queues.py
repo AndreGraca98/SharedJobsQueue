@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import List
+from typing import List, Union
 
 from .jobs import Job, Priority
 
@@ -15,16 +15,18 @@ class JobsQueue:
         # Adds new job
         _priority = args.priority
         if _priority.isnumeric():
-            assert int(_priority) in list(range(1, len(Priority)+1, 1)), f'Priority not available. Expected: {Priority.__members__}. Got: {_priority}'
+            assert int(_priority) in list(
+                range(1, len(Priority) + 1, 1)
+            ), f"Priority not available. Expected: {Priority.__members__}. Got: {_priority}"
             priority = Priority(int(_priority))
         else:
             priority = Priority[_priority.upper()]
-            
+
         new_job = Job(
             priority=priority,
-            command=' '.join(args.command),
+            command=" ".join(args.command),
             _id=self.get_new_valid_id(),
-            verbose_lvl=args.verbose
+            verbose_lvl=args.verbose,
         )
 
         if args.verbose > 0:
@@ -46,20 +48,26 @@ class JobsQueue:
         # Removes a job by its id
         if -1 in args.id:
             if args.verbose > 0:
-                print(f"Removing all jobs with ids={list(map(lambda x: x._id, self.jobs))}...")
+                print(
+                    f"Removing all jobs with ids={list(map(lambda x: x._id, self.jobs))}..."
+                )
             self.jobs = list()
             return
-            
+
         for _id in args.id:
             if not _id in [job._id for job in self.jobs]:
                 if args.verbose > 0:
-                    print(f"Job with id={_id} does not exist in {self._str_lvl(args.verbose)} ...")
+                    print(
+                        f"Job with id={_id} does not exist in {self._str_lvl(args.verbose)} ..."
+                    )
                 continue
 
             idx = [job._id == _id for job in self.jobs].index(True)
 
             assert (
-                os.getlogin() == self.jobs[idx].user or os.getlogin() == "root" or os.getlogin() == "aime"
+                os.getlogin() == self.jobs[idx].user
+                or os.getlogin() == "root"
+                or os.getlogin() == "aime"
             ), f"Cant remove job with id {idx} because user is not the same. Job belongs to {self.jobs[idx].user}"
 
             if args.verbose > 0:
@@ -67,7 +75,7 @@ class JobsQueue:
 
             self.jobs.pop(idx)
 
-    def get_next_job(self) -> Job:
+    def get_next_job(self) -> Union[Job, None]:
         # Get urgent jobs first
         self.jobs = sorted(self.jobs, reverse=True)
         if len(self.jobs) == 0:
@@ -77,45 +85,49 @@ class JobsQueue:
 
     def show(self, args, **kwargs):
         print(self._str_lvl(args.verbose))
-        
+
     def update(self, args: argparse.Namespace):
         if not args.id in [job._id for job in self.jobs]:
             if args.verbose > 0:
-                print(f"Job with id={args.id} does not exist in {self._str_lvl(args.verbose)} ...")
+                print(
+                    f"Job with id={args.id} does not exist in {self._str_lvl(args.verbose)} ..."
+                )
             return
-            
+
         idx = [job._id == args.id for job in self.jobs].index(True)
-            
-        if args.attr in ['command', 'priority']:
-            if args.attr == 'priority':
+
+        if args.attr in ["command", "priority"]:
+            if args.attr == "priority":
                 if args.new_value.isnumeric():
-                    assert int(args.new_value) in list(range(1, len(Priority)+1, 1)), f'Priority not available. Expected: {Priority.__members__}. Got: {args.new_value}'
+                    assert int(args.new_value) in list(
+                        range(1, len(Priority) + 1, 1)
+                    ), f"Priority not available. Expected: {Priority.__members__}. Got: {args.new_value}"
                     new_value = Priority(int(args.new_value))
                 else:
                     new_value = Priority[args.new_value.upper()]
             else:
                 new_value = args.new_value
-            
-            job=self.jobs[idx]
 
-            print(f'Updating {job._str_lvl_(args.verbose)} . {args.attr}={getattr(job,args.attr)} -> {args.attr}={new_value}')
+            job = self.jobs[idx]
+
+            print(
+                f"Updating {job._str_lvl_(args.verbose)} . {args.attr}={getattr(job,args.attr)} -> {args.attr}={new_value}"
+            )
             setattr(job, args.attr, new_value)
-            
-            
+
         else:
             if args.verbose > 0:
-                print(f'Job has no attribute < {args.attr} >')
-        
+                print(f"Job has no attribute < {args.attr} >")
 
     def __str__(self) -> str:
         return "Jobs:\n  " + "\n  ".join(
             [str(job) for job in sorted(self.jobs, reverse=True)]
         )
-        
+
     def _str_lvl(self, lvl):
         for job in self.jobs:
             job.verbose_lvl = lvl
-            
+
         return self
 
     __repr__ = __str__

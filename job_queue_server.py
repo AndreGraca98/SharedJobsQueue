@@ -11,11 +11,10 @@ from shared_jobs_queue.tools import fpkl, ftext
 def run():
     args = get_args(client_args=False)
     sleep_time = args.time
-    
-    QUEUE_FILENAME:str = ".JOBS_QUEUE.pkl"
-    QUEUE_LOG_FILENAME:str = ".JOBS_QUEUE.log"
-    path = (Path.home() / Path(QUEUE_FILENAME)).resolve()
-    log_path = (Path.home() / Path(QUEUE_LOG_FILENAME)).resolve()
+
+    DIR = Path("/tmp/jobs_queue/")
+    path = DIR / ".JOBS_QUEUE.pkl"
+    log_path = DIR / ".JOBS_QUEUE.log"
 
     idle_state = False
     while True:
@@ -24,6 +23,8 @@ def run():
                 queue = fpkl.read(path)
             except FileNotFoundError:
                 # If file does not exist create new empty queue
+                DIR.mkdir(parents=True, exist_ok=True)
+
                 queue = JobsQueue()
                 fpkl.write(path, queue)
 
@@ -50,24 +51,28 @@ def run():
 
             # Log
             print("Starting job:", job._full_str_)
-            ftext.append(log_path, f"{datetime.datetime.now()} :INFO: Starting job: {job._full_str_}\n")
+            ftext.append(
+                log_path,
+                f"{datetime.datetime.now()} :INFO: Starting job: {job._full_str_}\n",
+            )
 
             # Update queue
             fpkl.write(path, queue)
-            
+
             # Run job
-            code = subprocess.run(job.command, shell=True)
-            
+            code = subprocess.run(job.command, shell=True, stderr=open(log_path, "a+"))
+
             # Log
             print("Finished code:", code)
             ftext.append(
-                log_path, f"{datetime.datetime.now()} : {'SUCCESS' if code.returncode == 0 else 'ERROR'} : {code} \n"
+                log_path,
+                f"{datetime.datetime.now()} : {'SUCCESS' if code.returncode == 0 else 'ERROR'} : {code} \n",
             )
-            
+
         except KeyboardInterrupt:
             ftext.append(
-                    log_path, f"{datetime.datetime.now()} : ERROR : KeyboardInterrupt \n"
-                )
+                log_path, f"{datetime.datetime.now()} : ERROR : KeyboardInterrupt \n"
+            )
             print()
             break
 

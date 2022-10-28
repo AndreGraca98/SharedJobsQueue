@@ -1,6 +1,6 @@
 *.code-workspace
-*.log
-*.pkl
+.vscode
+*cache*
 
-*__pycache__
+
 nb.ipynb

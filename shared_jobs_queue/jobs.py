@@ -13,6 +13,7 @@ class Priority(Enum):
 
 
 class Job:
+    ' Queueable Job. Command, priority and timestamp '
     verbose_lvl:int
     def __init__(self, priority: Priority, command: str, _id: int, verbose_lvl:int=1) -> None:
         self.priority = priority

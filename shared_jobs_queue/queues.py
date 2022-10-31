@@ -36,6 +36,12 @@ class JobsQueue:
 
     def get_ids(self):
         return [job._id for job in self.jobs]
+    
+    def get_job_with_id(self, _id:int)->Union[Job, None]:
+        if _id not in self.get_ids():
+            return
+        
+        return self.jobs[[job._id == _id for job in self.jobs].index(True)]
 
     def get_new_valid_id(self):
         """Get a new id that does not exist yet"""
@@ -84,7 +90,19 @@ class JobsQueue:
         return self.jobs.pop(0)
 
     def show(self, args, **kwargs):
-        print(self._str_lvl(args.verbose))
+        if 'id' in args and args.id is not None:
+            print(self.show_id(args))
+        else:
+            print(self._str_lvl(args.verbose))
+
+    def show_id(self, args):
+        job = self.get_job_with_id(args.id)
+        print(type(args.id))
+        if not job:
+            return f'Job with id={args.id} not found! Choose from {self.get_ids()}'
+        job.verbose_lvl = args.verbose
+        return job
+        
 
     def update(self, args: argparse.Namespace):
         if not args.id in [job._id for job in self.jobs]:

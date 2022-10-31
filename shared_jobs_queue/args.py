@@ -48,6 +48,12 @@ def get_client_parser():
     parser.set_defaults(operation=JobsQueue.show)
     subparser = parser.add_subparsers()
 
+    parser_show = subparser.add_parser("show", help="Add a task to the queue")
+    parser_show.add_argument('id', nargs='?', type=int, default=None)
+    parser_show.set_defaults(operation=JobsQueue.show)
+    parse_verbose(parser=parser_show)
+    
+    
     parser_add = subparser.add_parser("add", help="Add a task to the queue")
     parser_add.add_argument(
         "command", type=str, action="store", nargs="+", help="Command to run"
@@ -62,7 +68,7 @@ def get_client_parser():
         help="Command priority. low (1), medium/normal (2), high (3) or urgent (4)",
     )
     parser_add.set_defaults(operation=JobsQueue.add)
-    parse_verbose(parser_add)
+    parse_verbose(parser=parser_add)
 
     parser_remove = subparser.add_parser("remove", help="Remove a task from the queue")
     parser_remove.add_argument(
@@ -73,14 +79,14 @@ def get_client_parser():
         help="Job ids to remove from the queue. If -1 remove all jobs",
     )
     parser_remove.set_defaults(operation=JobsQueue.remove)
-    parse_verbose(parser_remove)
+    parse_verbose(parser=parser_remove)
 
     parser_update = subparser.add_parser("update", help="Updates a task from the queue")
     parser_update.add_argument("id", type=int, help="Job id to update from the queue")
     parser_update.add_argument("attr", type=str, help="Job attribute to change")
     parser_update.add_argument("new_value", type=str, help="Job attribute new value")
     parser_update.set_defaults(operation=JobsQueue.update)
-    parse_verbose(parser_update)
+    parse_verbose(parser=parser_update)
 
     return parser
 
@@ -101,6 +107,7 @@ def get_args_from_list(_list: List, client_args: bool = True):
     if client_args:
         return get_client_parser().parse_args(_list)
     return get_server_parser().parse_args(_list)
+
 
 
 # ENDFILE

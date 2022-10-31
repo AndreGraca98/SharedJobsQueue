@@ -60,7 +60,8 @@ def run():
             fpkl.write(path, queue)
 
             # Run job
-            code = subprocess.run(job.command, shell=True, stderr=open(log_path, "a+"))
+            code = subprocess.run(job.command, shell=True)
+            # code = subprocess.run(job.command, shell=True, stderr=open(log_path, "a+"))
 
             # Log
             print("Finished code:", code)

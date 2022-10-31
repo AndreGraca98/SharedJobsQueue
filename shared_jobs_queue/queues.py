@@ -97,7 +97,6 @@ class JobsQueue:
 
     def show_id(self, args):
         job = self.get_job_with_id(args.id)
-        print(type(args.id))
         if not job:
             return f'Job with id={args.id} not found! Choose from {self.get_ids()}'
         job.verbose_lvl = args.verbose

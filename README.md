@@ -9,8 +9,8 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
   - [Run on the user side](#run-on-the-user-side)
     - [1. View job queue](#1-view-job-queue)
     - [2. Add job to queue](#2-add-job-to-queue)
-    - [3. Remove job from queue](#3-remove-job-from-queue)
-    - [4. Update job from queue](#4-update-job-from-queue)
+    - [3. Update job from queue](#3-update-job-from-queue)
+    - [4. Remove job from queue](#4-remove-job-from-queue)
     - [Example usage](#example-usage)
   - [TODO](#todo)
 
@@ -68,7 +68,7 @@ optional arguments:
 
 ### 1. View job queue
 
-[JobQueueClient -vvv](/shared_jobs_queue/queues.py#L78)
+[JobQueueClient -vvv](/shared_jobs_queue/queues.py#L100)
 
 ```bash
 python job_queue_client.py
@@ -94,7 +94,7 @@ optional arguments:
 
 ### 2. Add job to queue
 
-[JobQueueClient add ...](/shared_jobs_queue/queues.py#L14)
+[JobQueueClient add ...](/shared_jobs_queue/queues.py#L24)
 
 ```bash
 python job_queue_client.py add [COMMAND] -p [PRIORITY]
@@ -116,30 +116,9 @@ optional arguments:
                         Verbose
 ```
 
-### 3. Remove job from queue
+### 3. Update job from queue
 
-[JobQueueClient remove ...](/shared_jobs_queue/queues.py#L45)
-
-```bash
-python job_queue_client.py remove [ID_0 ... ID_n]
-```
-
-```text
-usage: Client Jobs Queue remove [-h] [-v [VERBOSE]] id [id ...]
-
-positional arguments:
-  id                    Job ids to remove from the queue. If -1 remove all
-                        jobs
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
-                        Verbose
-```
-
-### 4. Update job from queue
-
-[JobQueueClient update ...](/shared_jobs_queue/queues.py#L81)
+[JobQueueClient update ...](/shared_jobs_queue/queues.py#L37)
 
 ```bash
 python job_queue_client.py update [ID] [ATTR] [NEW_VALUE]
@@ -159,81 +138,112 @@ optional arguments:
                         Verbose
 ```
 
+### 4. Remove job from queue
+
+[JobQueueClient remove ...](/shared_jobs_queue/queues.py#L66)
+
+```bash
+python job_queue_client.py remove [ID_0 ... ID_n]
+```
+
+```text
+usage: Client Jobs Queue remove [-h] [-v [VERBOSE]] id [id ...]
+
+positional arguments:
+  id                    Job ids to remove from the queue. If -1 remove all
+                        jobs
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v [VERBOSE], -V [VERBOSE], --verbose [VERBOSE]
+                        Verbose
+```
+
 ### Example usage
 
 Client Side
 
 ```bash
 # Add bash command
-$ JobQueueClient add /bin/bash SharedJobsQueue/examples/file.sh
-Adding new job Job(_id=0, user=brisa, command="/bin/bash SharedJobsQueue/examples/file.sh", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.306625) ...
+$ JobQueueClient add /bin/bash /home/brisa/SharedJobsQueue/examples/file.sh
+Adding Job(id=0, command="/bin/bash /home/brisa/SharedJo[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
 
 # Add python command
-$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python SharedJobsQueue/random_sleep.py
-Adding new job Job(_id=1, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.367649) ...
-$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python SharedJobsQueue/random_sleep.py
-Adding new job Job(_id=2, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.427472) ...
-$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python SharedJobsQueue/random_sleep.py
-Adding new job Job(_id=3, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.483814) ...
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py
+Adding Job(id=1, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
 
-# Add python command with high priority
-$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python SharedJobsQueue/random_sleep.py -p 3
-Adding new job Job(_id=4, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.HIGH, timestamp=2022-10-12 15:55:51.539693) ...
+# Add error example command
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/error_example.py
+Adding Job(id=2, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+
+# Add command that requires gpu usage
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py --mem 1e3
+Adding Job(id=3, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=1000.0, state=WAITING, timestamp=11/08-00:48)
+
+# Add python command with urgent and high priority
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py --mem 1e9 -p 4
+Adding Job(id=4, command="/home/brisa/anaconda3/envs/job[...]", priority=URGENT, gpu_mem=1000000000.0, state=WAITING, timestamp=11/08-00:48)
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py -p 3
+Adding Job(id=5, command="/home/brisa/anaconda3/envs/job[...]", priority=HIGH, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
 
 # Add python command with low priority
-$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python SharedJobsQueue/random_sleep.py -p low
-Adding new job Job(_id=5, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.LOW, timestamp=2022-10-12 15:55:51.596815) ...
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py
+Traceback (most recent call last):
+  File "/home/brisa/SharedJobsQueue/job_queue_client.py", line 29, in <module>
+    run()
+  File "/home/brisa/SharedJobsQueue/job_queue_client.py", line 22, in run
+    args.operation(queue, args)
+  File "/home/brisa/SharedJobsQueue/shared_jobs_queue/queues.py", line 27, in add
+    priority=get_priority(args.priority),
+  File "/home/brisa/SharedJobsQueue/shared_jobs_queue/queues.py", line 13, in get_priority
+    ), f"Priority not available. Expected: {Priority.__members__}. Got: {priority}"
+AssertionError: Priority not available. Expected: OrderedDict([('LOW', <Priority.LOW: 1>), ('MEDIUM', <Priority.MEDIUM: 2>), ('NORMAL', <Priority.MEDIUM: 2>), ('HIGH', <Priority.HIGH: 3>), ('URGENT', <Priority.URGENT: 4>)]). Got: 0
+$ JobQueueClient add /home/brisa/anaconda3/envs/jobqueue/bin/python /home/brisa/SharedJobsQueue/examples/sucess_example.py -p low
+Adding Job(id=6, command="/home/brisa/anaconda3/envs/job[...]", priority=LOW, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
 
 # Show current job queue
 $ JobQueueClient
 Jobs:
-  Job(_id=4, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.HIGH, timestamp=2022-10-12 15:55:51.539693)
-  Job(_id=0, user=brisa, command="/bin/bash SharedJobsQueue/examples/file.sh", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.306625)
-  Job(_id=1, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.367649)
-  Job(_id=2, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.427472)
-  Job(_id=3, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.483814)
-  Job(_id=5, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.LOW, timestamp=2022-10-12 15:55:51.596815)
+  Job(id=4, command="/home/brisa/anaconda3/envs/job[...]", priority=URGENT, gpu_mem=1000000000.0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=5, command="/home/brisa/anaconda3/envs/job[...]", priority=HIGH, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=0, command="/bin/bash /home/brisa/SharedJo[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=1, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=2, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=3, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=1000.0, state=WAITING, timestamp=11/08-00:48)
+  Job(id=6, command="/home/brisa/anaconda3/envs/job[...]", priority=LOW, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
 
-# Remove job with id=1 from queue
-$ JobQueueClient remove 1
-Removing job Job(_id=1, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.367649) ...
-
-# Remove job with id=2 and id=3 from queue
-$ JobQueueClient remove 2 3
-Removing job Job(_id=2, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.427472) ...
-Removing job Job(_id=3, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.483814) ...
-
-# Show current job queue
-$ JobQueueClient
-Jobs:
-  Job(_id=4, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.HIGH, timestamp=2022-10-12 15:55:51.539693)
-  Job(_id=0, user=brisa, command="/bin/bash SharedJobsQueue/examples/file.sh", priority=Priority.MEDIUM, timestamp=2022-10-12 15:55:51.306625)
-  Job(_id=5, user=brisa, command="/home/brisa/anaconda3/envs/jobqueue/bin/python SharedJobsQueue/random_sleep.py", priority=Priority.LOW, timestamp=2022-10-12 15:55:51.596815)
+# Remove job with id=1 and id=4 from queue
+$ JobQueueClient remove 1 4
+Removing Job(id=1, command="/home/brisa/anaconda3/envs/job[...]", priority=MEDIUM, gpu_mem=0, state=WAITING, timestamp=11/08-00:48)
+Removing Job(id=4, command="/home/brisa/anaconda3/envs/job[...]", priority=URGENT, gpu_mem=1000000000.0, state=WAITING, timestamp=11/08-00:48)
 
 # Update job(id=5) priority to urgent
 $ JobQueueClient update 5 priority 4
-Updating job(id=2, ...) . priority=Priority.LOW -> priority=Priority.URGENT
+Updating Job(id=5, command="/home/brisa/anaconda3/envs/job[...]", priority=HIGH, gpu_mem=0, state=WAITING, timestamp=11/08-00:48) . priority=Priority.HIGH -> priority=Priority.URGENT
 
 # Update job(id=5) priority to normal
 $ JobQueueClient update 5 priority normal
-Updating job(id=2, ...) . priority=Priority.URGENT -> priority=Priority.MEDIUM
+Updating Job(id=5, command="/home/brisa/anaconda3/envs/job[...]", priority=URGENT, gpu_mem=0, state=WAITING, timestamp=11/08-00:48) . priority=Priority.URGENT -> priority=Priority.MEDIUM
 
 # Remove all jobs
-$ JobQueueClient remove -1
-Removing all jobs ids=[0, 4, 5]...
-
+$ JobQueueClient clear 
+Aborting clear command ! If you are sure you want to clear all jobs run the same command with the flag -y or --yes
+$ JobQueueClient clear -y
+Clearing all jobs...
 ```
 
 Server Side
 
 ```bash
-# Start running jobs with idle_time=1 second
-$ JobQueueServer 1
-2022-10-12 16:12:44.597015 :INFO: Idle ...
+# Start running jobs with idle_time=60 seconds
+$ JobQueueServer
+
+2022-11-08 00:49:31.328390 :INFO: Idle ...
 
 ```
 
 ## TODO
 
-  [ ] Make install easier
-  [ ] In version 2.0 make it so various users can use the queue
+  [ ] Make install easier.
+  [ ] Update readme.md
+  [x] In version 2.0 make it so various users can use the queue.

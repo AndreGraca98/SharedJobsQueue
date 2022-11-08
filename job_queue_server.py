@@ -6,6 +6,11 @@ from pathlib import Path
 from shared_jobs_queue.args import get_args
 from shared_jobs_queue.queues import JobsQueue
 from shared_jobs_queue.tools import fpkl, ftext
+from shared_jobs_queue.gpu_memory import (
+    GpuManager,
+    GpuMemoryOutOfRange,
+    wait_for_free_space,
+)
 
 
 def run():
@@ -35,12 +40,13 @@ def run():
                 # No jobs to run
 
                 # Log
-                log_str = f"{datetime.datetime.now()} :INFO: Idle ...\n"
+                log_str = f"\n{datetime.datetime.now()} :INFO: Idle ...\n"
                 print(log_str)
                 ftext.append(log_path, log_str)
 
                 time.sleep(sleep_time)
                 continue
+
             elif job is None and idle_state:
                 # Idle
                 time.sleep(sleep_time)
@@ -53,15 +59,21 @@ def run():
             print("Starting job:", job._full_str_)
             ftext.append(
                 log_path,
-                f"{datetime.datetime.now()} :INFO: Starting job: {job._full_str_}\n",
+                f"\n{datetime.datetime.now()} :INFO: Starting job: {job._full_str_}\n",
             )
 
             # Update queue
             fpkl.write(path, queue)
 
             # Run job
+            wait_for_free_space(
+                job.needed_gpu_mem, verbose=True
+            )  # Might throw GpuMemoryOutOfRange
+
             code = subprocess.run(job.command, shell=True)
-            # code = subprocess.run(job.command, shell=True, stderr=open(log_path, "a+"))
+            job.update_state()
+
+            fpkl.write(path, queue)
 
             # Log
             print("Finished code:", code)
@@ -70,7 +82,24 @@ def run():
                 f"{datetime.datetime.now()} : {'SUCCESS' if code.returncode == 0 else 'ERROR'} : {code} \n",
             )
 
+        except GpuMemoryOutOfRange:
+            if job is not None:
+                job.set_state(-1)
+                fpkl.write(path, queue)
+
+            ftext.append(
+                log_path,
+                f"{datetime.datetime.now()} : ERROR : GpuMemoryOutOfRange(Requested={job.needed_gpu_mem} MB, Available={GpuManager.TOTAL} MB) \n",
+            )
+            print(
+                f"{datetime.datetime.now()} : ERROR : GpuMemoryOutOfRange(Requested={job.needed_gpu_mem} MB, Available={GpuManager.TOTAL} MB). {job} \n"
+            )
+
         except KeyboardInterrupt:
+            if job is not None:
+                job.set_state(-1)
+                fpkl.write(path, queue)
+
             ftext.append(
                 log_path, f"{datetime.datetime.now()} : ERROR : KeyboardInterrupt \n"
             )
@@ -79,6 +108,7 @@ def run():
 
 
 if __name__ == "__main__":
+
     run()
 
 # ENDFILE

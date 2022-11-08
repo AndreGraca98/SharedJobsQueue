@@ -29,7 +29,7 @@ def get_server_parser():
         "Server Jobs Queue",
         description="Run jobs from the jobs queue",
     )
-    parser.add_argument("time", type=int, nargs="?", default=1, help="Idle time (s)")
+    parser.add_argument("time", type=int, nargs="?", default=60, help="Idle time (s)")
     return parser
 
 
@@ -48,45 +48,109 @@ def get_client_parser():
     parser.set_defaults(operation=JobsQueue.show)
     subparser = parser.add_subparsers()
 
-    parser_show = subparser.add_parser("show", help="Add a task to the queue")
-    parser_show.add_argument('id', nargs='?', type=int, default=None)
-    parser_show.set_defaults(operation=JobsQueue.show)
-    parse_verbose(parser=parser_show)
-    
-    
-    parser_add = subparser.add_parser("add", help="Add a task to the queue")
-    parser_add.add_argument(
-        "command", type=str, action="store", nargs="+", help="Command to run"
-    )
-    parser_add.add_argument(
-        "-p",
-        "-P",
-        "--priority",
-        default="normal",
-        type=str,
-        dest="priority",
-        help="Command priority. low (1), medium/normal (2), high (3) or urgent (4)",
-    )
-    parser_add.set_defaults(operation=JobsQueue.add)
-    parse_verbose(parser=parser_add)
+    # Show
+    def add_subparser_queue_show(subparser):
+        parser_show_id = subparser.add_parser("show", help="Show a task in the queue")
+        parser_show_id.add_argument(
+            "id", nargs="?", type=int, default=None, help="Show job with specified id"
+        )
+        parser_show_id.set_defaults(operation=JobsQueue.show)
+        parse_verbose(parser=parser_show_id)
 
-    parser_remove = subparser.add_parser("remove", help="Remove a task from the queue")
-    parser_remove.add_argument(
-        "id",
-        type=int,
-        action="store",
-        nargs="+",
-        help="Job ids to remove from the queue. If -1 remove all jobs",
-    )
-    parser_remove.set_defaults(operation=JobsQueue.remove)
-    parse_verbose(parser=parser_remove)
+    # Show filtered state
+    def add_subparser_queue_show_state(subparser):
+        parser_show_state = subparser.add_parser(
+            "show-state", help="Show a task in the queue"
+        )
+        parser_show_state.add_argument(
+            "state", nargs="?", default=None, help="Show jobs with specified state"
+        )
+        parser_show_state.set_defaults(operation=JobsQueue.show)
+        parse_verbose(parser=parser_show_state)
 
-    parser_update = subparser.add_parser("update", help="Updates a task from the queue")
-    parser_update.add_argument("id", type=int, help="Job id to update from the queue")
-    parser_update.add_argument("attr", type=str, help="Job attribute to change")
-    parser_update.add_argument("new_value", type=str, help="Job attribute new value")
-    parser_update.set_defaults(operation=JobsQueue.update)
-    parse_verbose(parser=parser_update)
+    # Add
+    def add_subparser_queue_add(subparser):
+        parser_add = subparser.add_parser("add", help="Add a task to the queue")
+        parser_add.add_argument(
+            "command", type=str, action="store", nargs="+", help="Command to run"
+        )
+        parser_add.add_argument(
+            "-p",
+            "-P",
+            "--priority",
+            default="normal",
+            type=str,
+            dest="priority",
+            help="Command priority. low (1), medium/normal (2), high (3) or urgent (4)",
+        )
+        parser_add.add_argument(
+            "--mem",
+            "--gpu_mem",
+            "--needed",
+            "--needed_mem",
+            "--needed_gpu_mem",
+            dest="gpu_mem",
+            type=float,
+            default=0,
+            help="GPU memory in MB. If cmd does not require the usage of graphical memory set --gpu_mem to 0.",
+        )
+        parser_add.set_defaults(operation=JobsQueue.add)
+        parse_verbose(parser=parser_add)
+
+    # Remove
+    def add_subparser_queue_remove(subparser):
+        parser_remove = subparser.add_parser(
+            "remove", help="Remove a task from the queue"
+        )
+        parser_remove.add_argument(
+            "id",
+            type=int,
+            action="store",
+            nargs="+",
+            help="Job ids to remove from the queue. If -1 remove all jobs",
+        )
+        parser_remove.set_defaults(operation=JobsQueue.remove)
+        parse_verbose(parser=parser_remove)
+
+    # Update
+    def add_subparser_queue_update(subparser):
+        parser_update = subparser.add_parser(
+            "update", help="Updates a task from the queue"
+        )
+        parser_update.add_argument(
+            "id", type=int, help="Job id to update from the queue"
+        )
+        parser_update.add_argument("attr", type=str, help="Job attribute to change")
+        parser_update.add_argument(
+            "new_value", type=str, help="Job attribute new value"
+        )
+        parser_update.set_defaults(operation=JobsQueue.update)
+        parse_verbose(parser=parser_update)
+
+    # Clear
+    def add_subparser_queue_clear(subparser):
+        parser_clear = subparser.add_parser(
+            "clear", help="Clears all tasks from the queue"
+        )
+        parser_clear.add_argument(
+            "-y", "--yes", action="store_true", help="Clear Job Queue"
+        )
+        parser_clear.set_defaults(operation=JobsQueue.clear)
+
+    # Clear Finished
+    def add_subparser_queue_clear_finished(subparser):
+        parser_clear_finished = subparser.add_parser(
+            "clear-finished", help="Clears all finished tasks from the queue"
+        )
+        parser_clear_finished.set_defaults(operation=JobsQueue.clear_finished)
+
+    add_subparser_queue_show(subparser)
+    add_subparser_queue_show_state(subparser)
+    add_subparser_queue_add(subparser)
+    add_subparser_queue_remove(subparser)
+    add_subparser_queue_update(subparser)
+    add_subparser_queue_clear(subparser)
+    add_subparser_queue_clear_finished(subparser)
 
     return parser
 
@@ -107,7 +171,6 @@ def get_args_from_list(_list: List, client_args: bool = True):
     if client_args:
         return get_client_parser().parse_args(_list)
     return get_server_parser().parse_args(_list)
-
 
 
 # ENDFILE

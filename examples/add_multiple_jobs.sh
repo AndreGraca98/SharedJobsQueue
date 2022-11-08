@@ -19,6 +19,9 @@ echo "# Add python command"
 echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py"
 JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py
 
+echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_20secs.py"
+JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_20secs.py
+
 echo ""
 echo "# Add error example command"
 echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/error_example.py"
@@ -65,10 +68,10 @@ echo "# Update job(id=5) priority to normal"
 echo "$ JobQueueClient update 5 priority normal"
 JobQueueClient update 5 priority normal
 
-echo ""
-echo "# Remove all jobs"
-echo "$ JobQueueClient clear "
-JobQueueClient clear
+# echo ""
+# echo "# Remove all jobs"
+# echo "$ JobQueueClient clear "
+# JobQueueClient clear
 
-echo "$ JobQueueClient clear -y"
-JobQueueClient clear -y
+# echo "$ JobQueueClient clear -y"
+# JobQueueClient clear -y

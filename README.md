@@ -23,22 +23,23 @@ cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name
 env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
+pip install easydict gpustat
 
 # Use an alias to call the server or client code from 
 # anywhere instead of using <python job_queue_client.py> and <python job_queue_server.py>
 if alias JobQueueClient >/dev/null 2>&1; then 
   echo "alias JobQueueClient already exists in ~/.bashrc"
 else
-  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_client.py'" >> ~/.bashrc
+  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/client.py'" >> ~/.bashrc
 fi
 if alias JobQueueServer >/dev/null 2>&1; then 
   echo "alias JobQueueServer already exists in ~/.bashrc"
 else
-  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/job_queue_server.py'" >> ~/.bashrc
+  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/server.py'" >> ~/.bashrc
 fi
 
 
-
+source ~/.bashrc
 
 ```
 

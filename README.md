@@ -23,6 +23,7 @@ cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name
 env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
+conda install -c anaconda pandas -y
 pip install easydict gpustat
 
 # Use an alias to call the server or client code from 
@@ -52,15 +53,16 @@ python job_queue_server.py [TIME_IN_SECONDS]
 ```
 
 ```text
-usage: Server Jobs Queue [-h] [time]
+usage: Server Jobs Queue [-h] [--threads THREADS] [time]
 
 Run jobs from the jobs queue
 
 positional arguments:
-  time        Idle time (s)
+  time               Idle time (s)
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help         show this help message and exit
+  --threads THREADS  Number of jobs allowed to run at the same time
 ```
 
 ## Run on the user side

@@ -6,8 +6,11 @@ fi
 
 
 JobQueueClient(){
-    python $HOME/SharedJobsQueue/job_queue_client.py "$@"
+    $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/jobs_queue/client.py "$@"
 }
+
+
+# TODO: Update this example
 
 echo ""
 echo "# Add bash command"
@@ -19,8 +22,8 @@ echo "# Add python command"
 echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py"
 JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py
 
-echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_20secs.py"
-JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_20secs.py
+echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_nsecs.py"
+JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sleep_nsecs.py
 
 echo ""
 echo "# Add error example command"
@@ -43,7 +46,7 @@ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQue
 echo ""
 echo "# Add python command with low priority"
 echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py"
-JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py -p 0
+JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py -p 1
 
 echo "$ JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py -p low"
 JobQueueClient add $HOME/anaconda3/envs/$env_name/bin/python $HOME/SharedJobsQueue/examples/sucess_example.py -p low
@@ -53,10 +56,10 @@ echo "# Show current job queue"
 echo "$ JobQueueClient"
 JobQueueClient
 
-echo ""
-echo "# Remove job with id=1 and id=4 from queue"
-echo "$ JobQueueClient remove 1 4"
-JobQueueClient remove 1 4
+# echo ""
+# echo "# Remove job with id=1 and id=4 from queue"
+# echo "$ JobQueueClient remove 1 4"
+# JobQueueClient remove 1 4
 
 echo ""
 echo "# Update job(id=5) priority to urgent"

@@ -24,7 +24,7 @@ env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
 conda install -c anaconda pandas -y
-pip install easydict gpustat
+pip install easydict gpustat filelock
 
 # Use an alias to call the server or client code from 
 # anywhere instead of using <python job_queue_client.py> and <python job_queue_server.py>

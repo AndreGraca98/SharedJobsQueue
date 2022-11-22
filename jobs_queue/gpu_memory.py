@@ -107,6 +107,10 @@ class GpuManager(metaclass=ReprClss):
             pid: int
             gpu_id: int
             time_secs: int
+            # Extras
+            full_command: float
+            cpu_memory_usage: float
+            cpu_percent: float
 
             def __str__(self) -> str:
                 cmd_size = 40
@@ -163,9 +167,9 @@ if __name__ == "__main__":
     print(GpuManager)
     pprint.pprint(GpuManager.get_running_processes())
 
-    args = get_parser().parse_args()
-    print(args)
+    # args = get_parser().parse_args()
+    # print(args)
     # print(cmd)
 
-    now_free = wait_for_free_space(args.gpu_mem, verbose=True)
-    print(now_free)
+    # now_free = wait_for_free_space(args.gpu_mem, verbose=True)
+    # print(now_free)

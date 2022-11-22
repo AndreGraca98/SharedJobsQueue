@@ -34,6 +34,7 @@ class Log(Enum):
 
 
 def run_server(sleep_time: int = 60):
+    JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
 
@@ -71,11 +72,17 @@ def run_server(sleep_time: int = 60):
                 log_path,
             )
 
-            # TODO: add device to command
-            # cmd.py ... --device cuda:{device if device is not True} else --dataparallel
+            if job.gpu_mem.values[0] == 0.0:
+                device = "cpu"  # TODO : Use 'cpu' or ''
+            elif device is True:
+                device = ""
+            else:
+                device = f"cuda:{device}"
+
             code = subprocess.run(
-                f"{job.command.values[0]}{ '' if device is True else device}",
+                f"{job.command.values[0]} {device}",
                 shell=True,
+                stderr=open(log_path, "a+"),
             )
 
             JobsTable.set_job_state(

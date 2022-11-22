@@ -2,7 +2,7 @@ import sys
 import time
 
 sleep_time = float(sys.argv[1]) if len(sys.argv) > 1 else float(5)
-
+print("Args:", sys.argv[1:])
 print(f"Sleeping {sleep_time}s\n")
 start = time.time()
 while 1:

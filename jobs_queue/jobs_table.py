@@ -9,8 +9,10 @@ import pandas as pd
 from filelock import FileLock
 
 try:
+    from gpu_memory import GpuManager
     from jobs import Priority, State, get_job_repr
 except ModuleNotFoundError:
+    from .gpu_memory import GpuManager
     from .jobs import Priority, State, get_job_repr
 
 JOBS_TABLE_FILENAME = Path("/tmp/jobs_queue/jobs_table.csv")
@@ -78,6 +80,14 @@ class JobsTable:
             state=State.WAITING.value,
             timestamp=datetime.datetime.now(),
         )
+
+        GpuManager.update()
+        if not any(
+            gpu_mem <= single_gpu for single_gpu in GpuManager.TOTAL_single.values()
+        ):
+            print(
+                "WARNING: 'gpu_mem' exceeds any single gpu memory. Using multiple gpus..."
+            )
 
         new_row = pd.DataFrame(data, index=[0])
 

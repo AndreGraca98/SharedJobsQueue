@@ -43,10 +43,16 @@ class State(ABC):
 
 class State(Enum):
     "Job State"
-    ERROR = -1
-    WAITING = 0
-    RUNNING = PROCESSING = 1
-    FINISHED = DONE = 2
+    WAITING = 1
+    PAUSED = -1
+    RUNNING = PROCESSING = 2
+    FINISHED = DONE = 3
+    ERROR = -3
+    # ERROR = -1
+    # WAITING = 0
+    # PAUSED = -2
+    # RUNNING = PROCESSING = 1
+    # FINISHED = DONE = 2
 
     def get_valid(state: Union[State, str]) -> State:
         if isinstance(state, State):

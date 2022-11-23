@@ -75,9 +75,9 @@ def run_server(sleep_time: int = 60):
             if job.gpu_mem.values[0] == 0.0:
                 device = "cpu"  # TODO : Use 'cpu' or ''
             elif device is True:
-                device = ""
+                device = ""  # --data_parallel
             else:
-                device = f"cuda:{device}"
+                device = f"cuda:{device}"  # --device cuda:{device}
 
             code = subprocess.run(
                 f"{job.command.values[0]} {device}",
@@ -95,7 +95,8 @@ def run_server(sleep_time: int = 60):
             time.sleep(sleep_time)
 
         except KeyboardInterrupt:
-            JobsTable.set_job_state(job.id.values[0], state=JobState.ERROR)
+            if job is not None:
+                JobsTable.set_job_state(job.id.values[0], state=JobState.ERROR)
             print("\rShutting down server...")
             break
         except GpuMemoryOutOfRange:
@@ -114,13 +115,17 @@ def run():
 
     threads = [Process(target=run_server, args=(sleep_time,)) for _ in range(nthreads)]
 
-    for thread in threads:
-        thread.start()
-        time.sleep(sleep_time)
+    try:
+        for thread in threads:
+            thread.start()
+            time.sleep(sleep_time)
 
-    for thread in threads:
-        thread.join()
-        time.sleep(sleep_time)
+        for thread in threads:
+            thread.join()
+            time.sleep(sleep_time)
+
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":

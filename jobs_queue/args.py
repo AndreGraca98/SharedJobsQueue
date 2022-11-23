@@ -130,12 +130,61 @@ def get_client_parser():
         parser_update.add_argument(
             "id", type=int, help="Job id to update from the queue"
         )
-        parser_update.add_argument("attr", type=str, help="Job attribute to change")
+        parser_update.add_argument(
+            "attr",
+            type=str,
+            choices={"priority", "command", "gpu_mem"},
+            help="Job attribute to change",
+        )
         parser_update.add_argument(
             "new_value", type=str, help="Job attribute new value"
         )
         parser_update.set_defaults(operation=JobsTable.update)
         parse_verbose(parser=parser_update)
+
+    # Pause/UnPause
+    def add_subparser_queue_pause_unpause(parser):
+        op = parser.prog.split()[~0]
+
+        subparser_pause = parser.add_subparsers(
+            dest="op",
+            required=True,
+            description=f"{op.capitalize()} jobs with ids or all waiting jobs",
+        )
+
+        parser_pause_id = subparser_pause.add_parser(
+            "ids", description=f"{op.capitalize()} tasks with ids in the queue"
+        )
+
+        parser_pause_id.add_argument(
+            "ids",
+            type=int,
+            action="store",
+            nargs="+",
+            help="Job ids ",
+        )
+
+        subparser_pause.add_parser(
+            "all", description=f"{op.capitalize()} all waiting tasks in the queue"
+        )
+
+    # Pause
+    def add_subparser_queue_pause(subparser):
+        parser_pause = subparser.add_parser("pause", help="Pause tasks from the queue")
+        add_subparser_queue_pause_unpause(parser_pause)
+
+        parser_pause.set_defaults(operation=JobsTable.pause)
+        parse_verbose(parser=parser_pause)
+
+    # Unpause
+    def add_subparser_queue_unpause(subparser):
+        parser_pause = subparser.add_parser(
+            "unpause", help="Unpause tasks from the queue"
+        )
+        add_subparser_queue_pause_unpause(parser_pause)
+
+        parser_pause.set_defaults(operation=JobsTable.unpause)
+        parse_verbose(parser=parser_pause)
 
     # Clear
     def add_subparser_queue_clear(subparser):
@@ -160,6 +209,8 @@ def get_client_parser():
     add_subparser_queue_add(subparser)
     add_subparser_queue_remove(subparser)
     add_subparser_queue_update(subparser)
+    add_subparser_queue_pause(subparser)
+    add_subparser_queue_unpause(subparser)
     add_subparser_queue_clear(subparser)
     add_subparser_queue_clear_state(subparser)
 

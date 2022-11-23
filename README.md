@@ -249,4 +249,6 @@ $ JobQueueServer
 
   [ ] Make install easier.
   [ ] Update readme.md
+  [ ] Update examples
   [x] In version 2.0 make it so various users can use the queue.
+  [x] Add pause option for the tasks

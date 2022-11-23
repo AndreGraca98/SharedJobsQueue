@@ -41,8 +41,16 @@ class JobsTable:
         "Read jobs table sorted by state, priority and timestamp"
         try:
             df = pd.read_csv(JOBS_TABLE_FILENAME, sep=";")
+            states_order = [
+                State.RUNNING.value,
+                State.WAITING.value,
+                State.PAUSED.value,
+                State.FINISHED.value,
+                State.ERROR.value,
+            ]
+
             df["s"] = pd.Categorical(
-                df["state"], [1, 0, 2, -1]
+                df["state"], states_order
             )  # State: running, waiting, finished, error
             df["p"] = pd.Categorical(
                 df["priority"], sorted(Priority._value2member_map_.keys(), reverse=True)
@@ -135,6 +143,38 @@ class JobsTable:
         df.loc[df.id == id, attr] = new_value
 
         JobsTable.write(df)
+
+    @staticmethod
+    @lock
+    def pause(args: argparse.Namespace):
+        op: str = args.op
+        verbose: int = args.verbose
+        if op not in ["ids", "all"]:
+            raise ValueError(f"Expected args.op in ['ids', 'all'] . Got: {op}")
+
+        df = JobsTable.read()
+        ids = df[df["state"] == State.WAITING.value].id.values  # op = 'all'
+
+        if op == "ids":
+            ids = list(filter(lambda id: id in ids, args.ids))
+
+        [JobsTable.set_job_state(id, state=State.PAUSED) for id in ids]
+
+    @staticmethod
+    @lock
+    def unpause(args: argparse.Namespace):
+        op: str = args.op
+        verbose: int = args.verbose
+        if op not in ["ids", "all"]:
+            raise ValueError(f"Expected args.op in ['ids', 'all'] . Got: {op}")
+
+        df = JobsTable.read()
+        ids = df[df["state"] == State.PAUSED.value].id.values  # pause = 'all'
+
+        if op == "ids":
+            ids = list(filter(lambda id: id in ids, args.ids))
+
+        [JobsTable.set_job_state(id, state=State.WAITING) for id in ids]
 
     @staticmethod
     @lock

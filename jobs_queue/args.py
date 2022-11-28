@@ -29,7 +29,13 @@ def get_server_parser():
         "Server Jobs Queue",
         description="Run jobs from the jobs queue",
     )
-    parser.add_argument("time", type=int, nargs="?", default=60, help="Idle time (s)")
+    parser.add_argument(
+        "time",
+        type=int,
+        nargs="?",
+        default=60,
+        help="Idle time (s). NOTE: It is recommended to use at least 60 seconds of interval time when using this tool to train diferent experiments using gpus so they have enough time to load the model and data instead of throwing an error.",
+    )
     parser.add_argument(
         "--threads",
         type=int,

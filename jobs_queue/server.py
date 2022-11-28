@@ -73,7 +73,7 @@ def run_server(sleep_time: int = 60):
             )
 
             if job.gpu_mem.values[0] == 0.0:
-                device = "cpu"  # TODO : Use 'cpu' or ''
+                device = "cpu"  # FIXME : Use 'cpu' or ''
             elif device is True:
                 device = ""  # --data_parallel
             else:

@@ -149,7 +149,7 @@ def get_client_parser():
         subparser_pause = parser.add_subparsers(
             dest="op",
             required=True,
-            description=f"{op.capitalize()} jobs with ids or all waiting jobs",
+            description=f"{op.capitalize()} jobs with ids, priority or all waiting jobs",
         )
 
         parser_pause_id = subparser_pause.add_parser(
@@ -162,6 +162,16 @@ def get_client_parser():
             action="store",
             nargs="+",
             help="Job ids ",
+        )
+        parser_pause_id = subparser_pause.add_parser(
+            "priority",
+            description=f"{op.capitalize()} tasks with priority in the queue",
+        )
+
+        parser_pause_id.add_argument(
+            "priority",
+            type=str,
+            help="Jobs priority ",
         )
 
         subparser_pause.add_parser(

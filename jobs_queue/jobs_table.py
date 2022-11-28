@@ -149,14 +149,21 @@ class JobsTable:
     def pause(args: argparse.Namespace):
         op: str = args.op
         verbose: int = args.verbose
-        if op not in ["ids", "all"]:
-            raise ValueError(f"Expected args.op in ['ids', 'all'] . Got: {op}")
+        if op not in ["ids", "priority", "all"]:
+            raise ValueError(
+                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
+            )
 
         df = JobsTable.read()
         ids = df[df["state"] == State.WAITING.value].id.values  # op = 'all'
 
         if op == "ids":
             ids = list(filter(lambda id: id in ids, args.ids))
+        elif op == "priority":
+            ids = df[
+                (df["state"] == State.WAITING.value)
+                & (df["priority"] == Priority.get_valid(args.priority).value)
+            ].id.values
 
         [JobsTable.set_job_state(id, state=State.PAUSED) for id in ids]
 
@@ -165,14 +172,20 @@ class JobsTable:
     def unpause(args: argparse.Namespace):
         op: str = args.op
         verbose: int = args.verbose
-        if op not in ["ids", "all"]:
-            raise ValueError(f"Expected args.op in ['ids', 'all'] . Got: {op}")
-
+        if op not in ["ids", "priority", "all"]:
+            raise ValueError(
+                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
+            )
         df = JobsTable.read()
         ids = df[df["state"] == State.PAUSED.value].id.values  # pause = 'all'
 
         if op == "ids":
             ids = list(filter(lambda id: id in ids, args.ids))
+        elif op == "priority":
+            ids = df[
+                (df["state"] == State.PAUSED.value)
+                & (df["priority"] == Priority.get_valid(args.priority).value)
+            ].id.values
 
         [JobsTable.set_job_state(id, state=State.WAITING) for id in ids]
 

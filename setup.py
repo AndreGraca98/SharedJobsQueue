@@ -1,18 +1,20 @@
-from setuptools import setup
+import setuptools
 
+import versioneer
 
-setup(
+setuptools.setup(
     name="jobsqueue",
-    version="0.5",
-    description="A package to run jobs that may or may not require graphical memory",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="André Graça",
     author_email="andre.p.g@sapo.pt",
-    platforms="Python",
-    packages=["jobs_queue", "run_client", "run_server"],
+    description="Job manager that can be shared by multiple users to programatically run commands with different priority levels.",
+    packages=setuptools.find_packages(),
+    python_requires="3.7",
     install_requires=[
+        "pandas",
         "easydict",
         "gpustat",
         "filelock",
-        "pandas",
     ],
 )

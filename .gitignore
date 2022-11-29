@@ -6,3 +6,5 @@ version*
 
 nb.ipynb
 lock_file.py
+
+!version.txt

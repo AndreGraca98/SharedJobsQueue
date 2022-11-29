@@ -85,7 +85,7 @@ class JobsTable:
             command=" ".join(command),
             priority=Priority.get_valid(priority).value,
             gpu_mem=int(gpu_mem),
-            state=State.WAITING.value,
+            state=State.PAUSED.value,
             timestamp=datetime.datetime.now(),
         )
 

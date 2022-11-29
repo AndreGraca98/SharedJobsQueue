@@ -1,7 +1,18 @@
 import argparse
 from typing import List
 
-from jobs_table import JobsTable
+try:
+    from jobs_table import JobsTable
+except ModuleNotFoundError:
+    from .jobs_table import JobsTable
+
+__all__ = [
+    "get_server_parser",
+    "get_client_parser",
+    "get_args",
+    "get_args_from_str",
+    "get_args_from_list",
+]
 
 
 class VerboseAction(argparse.Action):

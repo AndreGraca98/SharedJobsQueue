@@ -9,6 +9,12 @@ from typing import Any, Dict, List, Union
 
 from easydict import EasyDict as EDict
 
+__all__ = [
+    "GpuMemoryOutOfRange",
+    "GpuManager",
+    "wait_for_free_space",
+]
+
 
 class GpuMemoryOutOfRange(Exception):
     ...

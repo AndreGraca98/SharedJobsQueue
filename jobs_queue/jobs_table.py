@@ -15,6 +15,9 @@ except ModuleNotFoundError:
     from .gpu_memory import GpuManager
     from .jobs import Priority, State, get_job_repr
 
+__all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
+
+
 JOBS_TABLE_FILENAME = Path("/tmp/jobs_queue/jobs_table.csv")
 
 

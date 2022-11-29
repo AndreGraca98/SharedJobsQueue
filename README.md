@@ -17,6 +17,9 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 ## Environment
 
 ```bash
+pip install git+https://github.com:AndreGraca98/SharedJobsQueue.git
+
+
 folder_name=SharedJobsQueue
 cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name && cd $folder_name
 
@@ -31,12 +34,12 @@ pip install easydict gpustat filelock
 if alias JobQueueClient >/dev/null 2>&1; then 
   echo "alias JobQueueClient already exists in ~/.bashrc"
 else
-  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/client.py'" >> ~/.bashrc
+  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/run_client.py'" >> ~/.bashrc
 fi
 if alias JobQueueServer >/dev/null 2>&1; then 
   echo "alias JobQueueServer already exists in ~/.bashrc"
 else
-  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/server.py'" >> ~/.bashrc
+  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/run_server.py'" >> ~/.bashrc
 fi
 
 
@@ -253,3 +256,4 @@ $ JobQueueServer
   1. [x] In version 2.0 make it so various users can use the queue.
   1. [x] Add pause option for the tasks
   1. [ ] Add tests
+  1. [ ] Better logging

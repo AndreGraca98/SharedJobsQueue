@@ -11,10 +11,5 @@ setuptools.setup(
     description="Job manager that can be shared by multiple users to programatically run commands with different priority levels.",
     packages=setuptools.find_packages(),
     python_requires="3.7",
-    install_requires=[
-        "pandas",
-        "easydict",
-        "gpustat",
-        "filelock",
-    ],
+    install_requires=["pandas", "easydict", "gpustat", "filelock", "versioneer"],
 )

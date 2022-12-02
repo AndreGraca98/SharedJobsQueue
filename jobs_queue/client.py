@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 try:
     from args import get_args
     from jobs_table import JOBS_TABLE_FILENAME

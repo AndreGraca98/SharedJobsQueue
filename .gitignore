@@ -4,5 +4,10 @@
 
 version*
 
-nb.ipynb
+*.ipynb
 lock_file.py
+
+!version.txt
+
+JobsClient
+JobsServer

@@ -6,12 +6,22 @@ from multiprocessing import Process
 from pathlib import Path
 from typing import Union
 
-from args import get_args
-from gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
-from jobs import State as JobState
-from jobs import get_job_repr
-from jobs_table import JOBS_TABLE_FILENAME, JobsTable
-from tools import ftext
+try:
+    from args import get_args
+    from gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
+    from jobs import State as JobState
+    from jobs import get_job_repr
+    from jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from tools import ftext
+except ModuleNotFoundError:
+    from .args import get_args
+    from .gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
+    from .jobs import State as JobState
+    from .jobs import get_job_repr
+    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from .tools import ftext
+
+__all__ = ["main_server"]
 
 
 class State:
@@ -73,7 +83,7 @@ def run_server(sleep_time: int = 60):
             )
 
             if job.gpu_mem.values[0] == 0.0:
-                device = "cpu"  # FIXME : Use 'cpu' or ''
+                device = ""  # FIXME : Use 'cpu' or ''
             elif device is True:
                 device = ""  # --data_parallel
             else:
@@ -90,7 +100,9 @@ def run_server(sleep_time: int = 60):
                 state=JobState.DONE if code.returncode == 0 else JobState.ERROR,
             )
 
-            Log["SUCCESS" if code.returncode == 0 else "ERROR"](f"{code} \n", log_path)
+            Log["SUCCESS" if code.returncode == 0 else "ERROR"](
+                f"On {get_job_repr(job.values, 1)} -> {code}\n", log_path
+            )
 
             time.sleep(sleep_time)
 
@@ -108,7 +120,7 @@ def run_server(sleep_time: int = 60):
             )
 
 
-def run():
+def main_server():
     args = get_args(client=False)
     sleep_time = args.time
     nthreads = args.threads
@@ -129,7 +141,7 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    main_server()
 
 
 # ENDFILE

@@ -5,6 +5,7 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 
 - [Job queues](#job-queues)
   - [Environment](#environment)
+  - [Requirements](#requirements)
   - [Run on the server side](#run-on-the-server-side)
   - [Run on the user side](#run-on-the-user-side)
     - [1. View job queue](#1-view-job-queue)
@@ -17,32 +18,21 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 ## Environment
 
 ```bash
-folder_name=SharedJobsQueue
-cd && git clone https://github.com/AndreGraca98/SharedJobsQueue.git $folder_name && cd $folder_name
-
 env_name=jobqueue
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
-conda install -c anaconda pandas -y
-pip install easydict gpustat filelock
+pip install git+https://github.com/AndreGraca98/SharedJobsQueue.git
 
-# Use an alias to call the server or client code from 
-# anywhere instead of using <python job_queue_client.py> and <python job_queue_server.py>
-if alias JobQueueClient >/dev/null 2>&1; then 
-  echo "alias JobQueueClient already exists in ~/.bashrc"
-else
-  echo "alias JobQueueClient='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/client.py'" >> ~/.bashrc
-fi
-if alias JobQueueServer >/dev/null 2>&1; then 
-  echo "alias JobQueueServer already exists in ~/.bashrc"
-else
-  echo "alias JobQueueServer='$HOME/anaconda3/envs/$env_name/bin/python $HOME/$folder_name/jobs_queue/server.py'" >> ~/.bashrc
-fi
-
-
-source ~/.bashrc
+bash create_cmds.sh
 
 ```
+
+## Requirements
+
+pandas
+easydict
+gpustat
+filelock
 
 ## Run on the server side
 
@@ -253,3 +243,4 @@ $ JobQueueServer
   1. [x] In version 2.0 make it so various users can use the queue.
   1. [x] Add pause option for the tasks
   1. [ ] Add tests
+  1. [ ] Better logging

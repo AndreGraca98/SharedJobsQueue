@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 __all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 
 
-JOBS_TABLE_FILENAME = Path("/tmp/jobs_queue/jobs_table.csv")
+JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
 
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")

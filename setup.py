@@ -11,7 +11,8 @@ chmod +x JobsServer
 mkdir -p {Path.home()}/bin
 cp -r jobs_queue {Path.home()}/bin
 cp JobsClient {Path.home()}/bin
-cp JobsServer {Path.home()}/bin"""
+cp JobsServer {Path.home()}/bin
+source ~/.profile"""
 
 
 class PostInstallCommand(install):

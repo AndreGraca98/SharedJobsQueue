@@ -25,14 +25,13 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 ## Environment
 
 ```bash
-# Create env from scratch
+# Create env
 env_name=jobjob
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
 
-pip install git+https://github.com/AndreGraca98/SharedJobsQueue.git
-
-bash create_cmds.sh
+# Install package
+pip install git+https://github.com/AndreGraca98/SharedJobsQueue.git@package_env
 
 ```
 

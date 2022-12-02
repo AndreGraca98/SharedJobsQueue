@@ -1,7 +1,19 @@
+from distutils.command.sdist import sdist as sdist_orig
+from distutils.errors import DistutilsExecError
+
 from setuptools import setup
 
 with open("jobs_queue/version.txt") as f:
     version = f.read()
+
+
+class sdist(sdist_orig):
+    def run(self):
+        try:
+            self.spawn(["bash", "create_cmds.sh"])
+        except DistutilsExecError:
+            self.warn("Creating commands failed")
+        super().run()
 
 
 setup(
@@ -18,4 +30,5 @@ setup(
         "filelock",
         "pandas",
     ],
+    cmdclass={"sdist": sdist},
 )

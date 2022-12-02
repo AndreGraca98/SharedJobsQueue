@@ -4,8 +4,8 @@ Add and remove jobs to a queue that can be shared by multiple users to run
 scripts with different priority levels. Uses subprocess.run to run the commands.
 
 - [Job queues](#job-queues)
-  - [Environment](#environment)
   - [Requirements](#requirements)
+  - [Environment](#environment)
   - [Run on the server side](#run-on-the-server-side)
   - [Run on the user side](#run-on-the-user-side)
     - [1. View job queue](#1-view-job-queue)
@@ -15,24 +15,26 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
     - [Example usage](#example-usage)
   - [TODO](#todo)
 
+## Requirements
+
+- pandas
+- easydict
+- gpustat
+- filelock
+
 ## Environment
 
 ```bash
-env_name=jobqueue
+# Create env from scratch
+env_name=jobjob
 conda create -n $env_name python=3.7 -y
 conda activate $env_name
+
 pip install git+https://github.com/AndreGraca98/SharedJobsQueue.git
 
 bash create_cmds.sh
 
 ```
-
-## Requirements
-
-pandas
-easydict
-gpustat
-filelock
 
 ## Run on the server side
 
@@ -237,7 +239,7 @@ $ JobQueueServer
 
 ## TODO
 
-  1. [ ] Make install easier.
+  1. [x] Make install easier.
   1. [ ] Update readme.md
   1. [ ] Update examples
   1. [x] In version 2.0 make it so various users can use the queue.

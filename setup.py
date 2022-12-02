@@ -1,15 +1,21 @@
-import setuptools
+from setuptools import setup
 
-import versioneer
+with open("jobs_queue/version.txt") as f:
+    version = f.read()
 
-setuptools.setup(
-    name="jobsqueue",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+
+setup(
+    name="jobs-queue",
+    version=version,
+    description="Add, remove, update and pause jobs in a queue that can be shared by multiple users to run scripts with different priority levels.",
     author="André Graça",
     author_email="andre.p.g@sapo.pt",
-    description="Job manager that can be shared by multiple users to programatically run commands with different priority levels.",
-    packages=setuptools.find_packages(),
-    python_requires="3.7",
-    install_requires=["pandas", "easydict", "gpustat", "filelock", "versioneer"],
+    platforms="Python",
+    packages=["jobs_queue"],
+    install_requires=[
+        "easydict",
+        "gpustat",
+        "filelock",
+        "pandas",
+    ],
 )

@@ -304,6 +304,8 @@ optional arguments:
 
 #### Client
 
+Runing `bash example/add_multiple_jobs.sh` in the command line yields:
+
 ```bash
 # Add bash command
 $ JobsClient add /bin/bash /home/brisa/SharedJobsQueue/examples/bash_example.sh

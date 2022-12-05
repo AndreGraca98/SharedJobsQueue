@@ -175,7 +175,7 @@ optional arguments:
 
 ### 4. Update job
 
-[JobsClient update [...]](/jobs_queue/jobs_table#L113)
+[JobsClient update [...]](/jobs_queue/jobs_table.py#L113)
 
 ```bash
 python job_queue_client.py update [ID] [ATTR] [NEW_VALUE]
@@ -199,7 +199,7 @@ optional arguments:
 
 ### 5. Remove job
 
-[JobsClient remove [...]](/jobs_queue/jobs_table#L197)
+[JobsClient remove [...]](/jobs_queue/jobs_table.py#L197)
 
 ```bash
 JobsClient remove [ID_0 ... ID_n]
@@ -219,7 +219,7 @@ optional arguments:
 
 ### 6. Pause job
 
-[JobsClient pause [...]](/jobs_queue/jobs_table#L152)
+[JobsClient pause [...]](/jobs_queue/jobs_table.py#L152)
 
 ```bash
 JobsClient pause all
@@ -243,7 +243,7 @@ subcommands:
 
 ### 7. Unpause/Resume job
 
-[JobsClient unpause [...]](/jobs_queue/jobs_table#L175)
+[JobsClient unpause [...]](/jobs_queue/jobs_table.py#L175)
 
 ```bash
 JobsClient unpause all
@@ -267,7 +267,7 @@ subcommands:
 
 ### 8. Clear jobs
 
-[JobsClient clear [...]](/jobs_queue/jobs_table#L240)
+[JobsClient clear [...]](/jobs_queue/jobs_table.py#L240)
 
 ```bash
 JobsClient clear
@@ -284,7 +284,7 @@ optional arguments:
 
 ### 9. Clear state jobs
 
-[JobsClient clear-state [...]](/jobs_queue/jobs_table#L254)
+[JobsClient clear-state [...]](/jobs_queue/jobs_table.py#L254)
 
 ```bash
 JobsClient clear-state [STATE]

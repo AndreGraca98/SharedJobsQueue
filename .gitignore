@@ -7,7 +7,7 @@ version*
 *.ipynb
 lock_file.py
 
-!version.txt
+!version.json
 
 JobsClient
 JobsServer

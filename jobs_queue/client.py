@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-import os
+
 
 
 try:
@@ -16,7 +16,7 @@ __all__ = ["main_client"]
 
 def main_client():
     JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
-    os.chmod(JOBS_TABLE_FILENAME, 0o777) # Read, Write, Execute permissions so other users can change the files
+    JOBS_TABLE_FILENAME.chmod(0o777) # Read, Write, Execute permissions so other users can change the files
 
     args = get_args(client=True)
     # print(args, "\n")

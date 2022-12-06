@@ -49,10 +49,10 @@ class Log(Enum):
 
 def run_server(sleep_time: int = 60):
     JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
-    os.chmod(JOBS_TABLE_FILENAME, 0o777)# Read, Write, Execute permissions so other users can change the files
+    JOBS_TABLE_FILENAME.chmod(0o777) # Read, Write, Execute permissions so other users can change the files
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
-    os.chmod(log_path, 0o777)# Read, Write, Execute permissions so other users can change the files
+    log_path.chmod(0o777) # Read, Write, Execute permissions so other users can change the files
 
     server_state = State.IDLE
 

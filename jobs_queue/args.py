@@ -1,10 +1,13 @@
 import argparse
+import datetime
+import os
+import time
 from typing import List
 
 try:
-    from jobs_table import JobsTable
+    from jobs_table import JOBS_TABLE_FILENAME, JobsTable
 except ModuleNotFoundError:
-    from .jobs_table import JobsTable
+    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
 
 __all__ = [
     "get_server_parser",
@@ -231,6 +234,35 @@ def get_client_parser():
         parser_clear_state.add_argument("state", type=str, help="Clear Job State")
         parser_clear_state.set_defaults(operation=JobsTable.clear_state)
 
+    # Info
+    def add_subparser_queue_info(subparser):
+        parser_info = subparser.add_parser("info", help="Shows queue info")
+
+        def show_info(*args, **kwargs):
+            pholder = " --- "
+            if JOBS_TABLE_FILENAME.exists():
+                mtime = datetime.datetime.fromtimestamp(
+                    JOBS_TABLE_FILENAME.stat().st_mtime
+                )
+                mode = JOBS_TABLE_FILENAME.stat().st_mode
+                size = JOBS_TABLE_FILENAME.stat().st_size
+            else:
+                mtime = pholder
+                mode = pholder
+                size = pholder
+
+            msg = f"""Queue:
+  dir: {JOBS_TABLE_FILENAME.parent}
+  filename: {JOBS_TABLE_FILENAME}
+  exists: {JOBS_TABLE_FILENAME.exists()}
+  mode: {mode}
+  modified: {mtime}
+  size: {size} B
+"""
+            print(msg)
+
+        parser_info.set_defaults(operation=show_info)
+
     add_subparser_queue_show(subparser)
     add_subparser_queue_show_state(subparser)
     add_subparser_queue_add(subparser)
@@ -240,6 +272,7 @@ def get_client_parser():
     add_subparser_queue_unpause(subparser)
     add_subparser_queue_clear(subparser)
     add_subparser_queue_clear_state(subparser)
+    add_subparser_queue_info(subparser)
 
     return parser
 

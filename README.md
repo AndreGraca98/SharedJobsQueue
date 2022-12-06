@@ -432,3 +432,4 @@ Shutting down server...
   1. [x] Add pause option for the tasks
   1. [ ] Add tests
   1. [ ] Better logging
+  1. [ ] Add kill process option

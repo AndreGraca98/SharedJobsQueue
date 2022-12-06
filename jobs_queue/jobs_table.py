@@ -19,6 +19,7 @@ __all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 
 
 JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
+JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
 
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
@@ -71,6 +72,8 @@ class JobsTable:
     @lock
     def write(df: pd.DataFrame) -> None:
         df.to_csv(JOBS_TABLE_FILENAME, sep=";", index=None)
+        # Read, Write, Execute permissions so other users can change the files
+        JOBS_TABLE_FILENAME.chmod(0o777)
 
     # ================================================================= #
     @staticmethod

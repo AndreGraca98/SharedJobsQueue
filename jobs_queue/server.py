@@ -2,7 +2,6 @@
 
 
 import datetime
-import os
 import subprocess
 import time
 from enum import Enum
@@ -48,11 +47,10 @@ class Log(Enum):
 
 
 def run_server(sleep_time: int = 60):
-    JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
-    JOBS_TABLE_FILENAME.chmod(0o777) # Read, Write, Execute permissions so other users can change the files
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
-    log_path.chmod(0o777) # Read, Write, Execute permissions so other users can change the files
+    # Read, Write, Execute permissions so other users can change the files
+    log_path.touch(0o777)
 
     server_state = State.IDLE
 

@@ -22,7 +22,7 @@ JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
 
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
-
+os.chmod(f"{JOBS_TABLE_FILENAME}.lock", 0o777)# Read, Write, Execute permissions so other users can change the files
 
 class JobsTable:
     @staticmethod

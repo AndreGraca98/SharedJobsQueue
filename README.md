@@ -1,5 +1,7 @@
 # Job queues
 
+![badge](https://img.shields.io/github/package-json/v/AndreGraca98/SharedJobsQueue?filename=jobs_queue%2Fversion.json&label=jobs-queue&logo=python&logoColor=yellow)
+
 Add and remove jobs to a queue that can be shared by multiple users to run
 scripts with different priority levels. Uses subprocess.run to run the commands.
 

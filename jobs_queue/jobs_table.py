@@ -19,15 +19,12 @@ except ModuleNotFoundError:
 __all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 
 
+os.umask(0000)  # so everyone can read, write and execute
+
 JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
-JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
-
-
-# FIXME: add write permissions for all
+JOBS_TABLE_FILENAME.parent.mkdir(mode=0o777, parents=True, exist_ok=True)
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
-# Path(f"{JOBS_TABLE_FILENAME}.lock").chmod(0o777) # Read, Write, Execute
-# permissions so other users can change the files
 
 
 @lock

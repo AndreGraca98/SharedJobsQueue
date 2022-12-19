@@ -2,6 +2,7 @@
 
 
 import datetime
+import os
 import subprocess
 import time
 from enum import Enum
@@ -47,6 +48,7 @@ class Log(Enum):
 
 
 def run_server(sleep_time: int = 60):
+    os.umask(0000)  # so everyone can read, write and execute
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
     # Read, Write, Execute permissions so other users can change the files

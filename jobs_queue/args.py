@@ -1,13 +1,11 @@
 import argparse
 import datetime
-import os
-import time
 from typing import List
 
 try:
-    from jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from jobs_table import JOBS_TABLE_FILENAME, JobsTable, kills
 except ModuleNotFoundError:
-    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable, kills
 
 __all__ = [
     "get_server_parser",
@@ -53,7 +51,7 @@ def get_server_parser():
     parser.add_argument(
         "--threads",
         type=int,
-        default=2,
+        default=1,
         help="Number of jobs allowed to run at the same time",
     )
     return parser
@@ -263,6 +261,19 @@ def get_client_parser():
 
         parser_info.set_defaults(operation=show_info)
 
+    # Kill pid
+    def add_subparser_queue_kill_pid(subparser):
+        parser_kill_pid = subparser.add_parser(
+            "kill", help="kills a running process by its pid"
+        )
+        parser_kill_pid.add_argument("pid", type=int, help="Kill Job")
+        parser_kill_pid.add_argument(
+            "-y", "--yes", action="store_true", help="If certain use flag -y/--yes"
+        )
+        parser_kill_pid.set_defaults(
+            operation=lambda args: kills(args.pid, dry=not args.yes)
+        )
+
     add_subparser_queue_show(subparser)
     add_subparser_queue_show_state(subparser)
     add_subparser_queue_add(subparser)
@@ -273,6 +284,7 @@ def get_client_parser():
     add_subparser_queue_clear(subparser)
     add_subparser_queue_clear_state(subparser)
     add_subparser_queue_info(subparser)
+    add_subparser_queue_kill_pid(subparser)
 
     return parser
 

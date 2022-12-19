@@ -24,12 +24,14 @@ class Priority(Enum):
     HIGH = 3
     URGENT = 4
 
-    def get_valid(priority: Union[Priority, str]) -> Priority:
+    def get_valid(priority: Union[Priority, str, int, float]) -> Priority:
         try:
             if isinstance(priority, Priority):
                 return priority
 
-            if isinstance(priority, str) and priority.isdecimal():
+            if isinstance(priority, (int, float)) or (
+                isinstance(priority, str) and priority.lstrip("-").isdecimal()
+            ):
                 return Priority(int(priority))
 
             if isinstance(priority, str):
@@ -60,12 +62,14 @@ class State(Enum):
     FINISHED = DONE = 3
     ERROR = -3
 
-    def get_valid(state: Union[State, str]) -> State:
+    def get_valid(state: Union[State, str, int, float]) -> State:
         try:
             if isinstance(state, State):
                 return state
 
-            if isinstance(state, str) and state.lstrip("-").isdecimal():
+            if isinstance(state, (int, float)) or (
+                isinstance(state, str) and state.lstrip("-").isdecimal()
+            ):
                 return State(int(state))
 
             if isinstance(state, str):
@@ -81,28 +85,46 @@ class State(Enum):
 
 
 def get_job_repr(row_values: List[Any], lvl: int = 1) -> str:
-    id, user, cmd, priority, gpu_mem, state, timestamp = row_values[0]
-    state = State(state)
-    priority = Priority(priority)
+    (
+        pid,
+        id,
+        user,
+        cmd,
+        priority,
+        gpu_mem,
+        state,
+        ctime,
+        stime,
+        ftime,
+    ) = row_values[0]
+
+    state = State.get_valid(state)
+    priority = Priority.get_valid(priority)
 
     cmd_str = cmd[: lvl * 30]
 
     if len(cmd_str) != len(cmd):
         cmd_str += "[...]"
 
+    pid = pid if pid == "---" else pid
+    stime = stime if stime == "---" else f"{stime:%m/%d/%Y-%H:%M:%S}"
+    ftime = ftime if ftime == "---" else f"{ftime:%m/%d/%Y-%H:%M:%S}"
+
+    # FIXME: diferent ways to represent time
+
     if lvl < 0:
-        return f'Job(id={int(id)}, user={user}, command="{cmd}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, timestamp={timestamp})'
+        return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
 
     if lvl == 0:
-        return f"Job(id={int(id)}, priority={priority.value}, state={state.value}, timestamp={timestamp:%m/%d-%H:%M})"
+        return f"Job(id={int(id)}, user={user}, priority={priority.value}, state={state.value}, ctime={ctime:%m/%d-%H:%M})"
 
     if lvl == 1:
-        return f'Job(id={int(id)}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, timestamp={timestamp:%m/%d-%H:%M})'
+        return f'Job(id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d-%H:%M})'
 
     if lvl == 2:
-        return f'Job(id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, timestamp={timestamp:%m/%d/%Y-%H:%M:%S})'
+        return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
 
-    return f'Job(id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, timestamp={timestamp})'
+    return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
 
 
 # ENDFILE

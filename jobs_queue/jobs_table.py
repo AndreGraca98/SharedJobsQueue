@@ -3,9 +3,10 @@ import datetime
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Union
+from typing import Any, List, Union
 
 import pandas as pd
+import psutil
 from filelock import FileLock
 
 try:
@@ -22,19 +23,61 @@ JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
 JOBS_TABLE_FILENAME.parent.mkdir(parents=True, exist_ok=True)
 
 
+# FIXME: add write permissions for all
+
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
-# Path(f"{JOBS_TABLE_FILENAME}.lock").chmod(0o777) # Read, Write, Execute permissions so other users can change the files
+# Path(f"{JOBS_TABLE_FILENAME}.lock").chmod(0o777) # Read, Write, Execute
+# permissions so other users can change the files
+
+
+@lock
+def kills(id: int, dry: bool = False):
+    """Kill a job
+
+    Adapted from: https://stackoverflow.com/a/62066884/20478813
+    """
+
+    df = JobsTable.read()
+
+    runing = (
+        df[(df.pid != "---") & (df.user == os.getlogin())]
+        .id.values.astype(int)
+        .tolist()
+    )
+
+    pid = df[df.id == id].pid.values[0]
+
+    if (pid == "---") or (int(id) not in runing):
+        raise ValueError(f"Invalid job id. Expected: {runing} . Got: {id}")
+
+    if dry:
+        print(
+            f"DRY-RUN: Killing job with id={id} . If you are sure you want to kill this process use flag -y/--yes"
+        )
+        return
+
+    print(f"Killing job with id={id}")
+
+    parent = psutil.Process(int(pid))
+    for child in parent.children(recursive=True):
+        child.kill()
+    parent.kill()
+
+
 class JobsTable:
     @staticmethod
     def get_empty_table() -> pd.DataFrame:
         job_cols = [
+            "pid",  # None when created
             "id",
             "user",
             "command",
             "priority",
             "gpu_mem",
             "state",
-            "timestamp",
+            "ctime",  # Created
+            "stime",  # Started
+            "ftime",  # Finished
         ]
         return pd.DataFrame({col: [] for col in job_cols})
 
@@ -58,10 +101,12 @@ class JobsTable:
             df["p"] = pd.Categorical(
                 df["priority"], sorted(Priority._value2member_map_.keys(), reverse=True)
             )  # Highest priority first
-            df["timestamp"] = df.timestamp.apply(pd.Timestamp)  # Oldest timestamp first
+            df["ctime"] = df.ctime.apply(pd.Timestamp)  # Oldest ctime first
+            df["stime"] = df.stime.apply(lambda x: x if x == "---" else pd.Timestamp(x))
+            df["ftime"] = df.ftime.apply(lambda x: x if x == "---" else pd.Timestamp(x))
 
             # Sort by priority and Timestamp
-            df.sort_values(by=["s", "p", "timestamp"], inplace=True)
+            df.sort_values(by=["s", "p", "ctime"], inplace=True)
             df.drop(["s", "p"], axis=1, inplace=True)  # Drop state and priority helper
 
             return df
@@ -85,13 +130,16 @@ class JobsTable:
         verbose: int = args.verbose
 
         data = dict(
+            pid="---",
             id=JobsTable.get_new_valid_id(),
             user=os.getlogin(),
             command=" ".join(command),
             priority=Priority.get_valid(priority).value,
             gpu_mem=int(gpu_mem),
             state=State.PAUSED.value,
-            timestamp=datetime.datetime.now(),
+            ctime=datetime.datetime.now(),
+            stime="---",
+            ftime="---",
         )
 
         GpuManager.update()
@@ -104,7 +152,7 @@ class JobsTable:
 
         new_row = pd.DataFrame(data, index=[0])
 
-        new_row["timestamp"] = new_row.timestamp.apply(pd.Timestamp)
+        new_row["ctime"] = new_row.ctime.apply(pd.Timestamp)
 
         print(f"Adding {get_job_repr(new_row.values, lvl=verbose)} ...")
 
@@ -278,6 +326,21 @@ class JobsTable:
 
         df = JobsTable.read()
         df.loc[df.id == id, "state"] = State.get_valid(state).value
+
+        JobsTable.write(df)
+
+    @staticmethod
+    @lock
+    def update_job(id: int, col: str, value: Any):
+        df = JobsTable.read()
+        assert col in df.columns, f"Invalid column: {col}"
+
+        if id not in JobsTable.get_jobs_ids():
+            raise ValueError(
+                f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
+            )
+
+        df.loc[df.id == id, col] = value
 
         JobsTable.write(df)
 

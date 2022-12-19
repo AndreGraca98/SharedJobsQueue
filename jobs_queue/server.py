@@ -93,29 +93,49 @@ def run_server(sleep_time: int = 60):
             else:
                 device = f"cuda:{device}"  # --device cuda:{device}
 
-            code = subprocess.run(
+            proc = subprocess.Popen(
                 f"{job.command.values[0]} {device}",
                 shell=True,
                 stderr=open(log_path, "a+"),
             )
 
+            # Update job pid and start time
+            JobsTable.update_job(job.id.values[0], "pid", int(proc.pid))
+            JobsTable.update_job(job.id.values[0], "stime", datetime.datetime.now())
+
+            # Wait for process to finish
+            returncode = proc.wait()
+
+            # Update job finished time
+            JobsTable.update_job(job.id.values[0], "pid", "---")
+            JobsTable.update_job(job.id.values[0], "ftime", datetime.datetime.now())
+
             JobsTable.set_job_state(
                 job.id.values[0],
-                state=JobState.DONE if code.returncode == 0 else JobState.ERROR,
+                state=JobState.DONE if returncode == 0 else JobState.ERROR,
             )
 
-            Log["SUCCESS" if code.returncode == 0 else "ERROR"](
-                f"On {get_job_repr(job.values, 1)} -> {code}\n", log_path
+            Log["SUCCESS" if returncode == 0 else "ERROR"](
+                f"On {get_job_repr(job.values, 1)}\n", log_path
             )
 
             time.sleep(sleep_time)
 
         except KeyboardInterrupt:
             if job is not None:
+                # Update job finished time
+                JobsTable.update_job(job.id.values[0], "pid", "---")
+                JobsTable.update_job(job.id.values[0], "ftime", datetime.datetime.now())
+
                 JobsTable.set_job_state(job.id.values[0], state=JobState.ERROR)
             print("\rShutting down server...")
             break
+
         except GpuMemoryOutOfRange:
+            # Update job finished time
+            JobsTable.update_job(job.id.values[0], "pid", "---")
+            JobsTable.update_job(job.id.values[0], "ftime", datetime.datetime.now())
+
             JobsTable.set_job_state(job.id.values[0], state=JobState.ERROR)
 
             Log.ERROR(

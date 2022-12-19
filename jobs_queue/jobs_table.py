@@ -45,7 +45,8 @@ def kills(id: int, dry: bool = False):
         .tolist()
     )
 
-    pid = df[df.id == id].pid.values[0]
+    pid_list = df[df.id == id]
+    pid = "---" if len(pid_list.pid) == 0 else pid_list.pid.values[0]
 
     if (pid == "---") or (int(id) not in runing):
         raise ValueError(f"Invalid job id. Expected: {runing} . Got: {id}")

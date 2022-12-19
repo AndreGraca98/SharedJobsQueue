@@ -428,10 +428,11 @@ Shutting down server...
 ## TODO
 
   1. [x] Make install easier.
-  1. [x] Update readme.md
+  1. [ ] Update readme.md
   1. [x] Update examples
   1. [x] In version 2.0 make it so various users can use the queue.
   1. [x] Add pause option for the tasks
   1. [ ] Add tests
   1. [ ] Better logging
-  1. [ ] Add kill process option
+  1. [x] Add kill process option
+  1. [ ] Add retry process

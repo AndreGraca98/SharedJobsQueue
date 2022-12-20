@@ -58,6 +58,7 @@ def run_server(sleep_time: int = 60):
 
     while True:
         try:
+            time.sleep(sleep_time)
             job = JobsTable.get_next_job()
 
             if job is None and server_state is not State.IDLE:
@@ -66,13 +67,11 @@ def run_server(sleep_time: int = 60):
 
                 # Log
                 Log.INFO(f"Idle ...\n", log_path)
-
-                time.sleep(sleep_time)
+                
                 continue
 
             elif job is None and server_state is State.IDLE:
                 # Idle
-                time.sleep(sleep_time)
                 continue
 
             else:
@@ -121,7 +120,7 @@ def run_server(sleep_time: int = 60):
                 f"On {get_job_repr(job.values, 1)}\n", log_path
             )
 
-            time.sleep(sleep_time*5)
+            time.sleep(sleep_time)
 
         except KeyboardInterrupt:
             if job is not None:
@@ -156,11 +155,11 @@ def main_server():
     try:
         for thread in threads:
             thread.start()
-            time.sleep(sleep_time*5)
+            time.sleep(sleep_time)
 
         for thread in threads:
             thread.join()
-            time.sleep(sleep_time*5)
+            time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         pass

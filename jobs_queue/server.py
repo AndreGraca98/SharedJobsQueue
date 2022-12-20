@@ -121,7 +121,7 @@ def run_server(sleep_time: int = 60):
                 f"On {get_job_repr(job.values, 1)}\n", log_path
             )
 
-            time.sleep(sleep_time)
+            time.sleep(sleep_time*5)
 
         except KeyboardInterrupt:
             if job is not None:
@@ -156,11 +156,11 @@ def main_server():
     try:
         for thread in threads:
             thread.start()
-            time.sleep(sleep_time)
+            time.sleep(sleep_time*5)
 
         for thread in threads:
             thread.join()
-            time.sleep(sleep_time)
+            time.sleep(sleep_time*5)
 
     except KeyboardInterrupt:
         pass

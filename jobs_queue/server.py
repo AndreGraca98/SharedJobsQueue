@@ -58,6 +58,7 @@ def run_server(sleep_time: int = 60):
 
     while True:
         try:
+            time.sleep(sleep_time)
             job = JobsTable.get_next_job()
 
             if job is None and server_state is not State.IDLE:
@@ -66,13 +67,11 @@ def run_server(sleep_time: int = 60):
 
                 # Log
                 Log.INFO(f"Idle ...\n", log_path)
-
-                time.sleep(sleep_time)
+                
                 continue
 
             elif job is None and server_state is State.IDLE:
                 # Idle
-                time.sleep(sleep_time)
                 continue
 
             else:

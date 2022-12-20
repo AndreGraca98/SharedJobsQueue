@@ -264,15 +264,27 @@ def get_client_parser():
     # Kill pid
     def add_subparser_queue_kill_pid(subparser):
         parser_kill_pid = subparser.add_parser(
-            "kill", help="kills a running process by its pid"
+            "kill", help="kills a running process by its id"
         )
-        parser_kill_pid.add_argument("pid", type=int, help="Kill Job")
+        parser_kill_pid.add_argument("id", type=int, help="Kill Job")
         parser_kill_pid.add_argument(
             "-y", "--yes", action="store_true", help="If certain use flag -y/--yes"
         )
         parser_kill_pid.set_defaults(
-            operation=lambda args: kills(args.pid, dry=not args.yes)
+            operation=lambda args: kills(args.id, dry=not args.yes)
         )
+
+    # Retry job
+    def add_subparser_queue_retry_job(subparser):
+        parser_retry = subparser.add_parser(
+            "retry", help="Retries runing a process by its id"
+        )
+        parser_retry.add_argument("id", type=int, help="Job id")
+
+        def not_implemented():
+            raise NotImplementedError(f"This feature is not yet implemented")
+
+        parser_retry.set_defaults(operation=lambda args: not_implemented())
 
     add_subparser_queue_show(subparser)
     add_subparser_queue_show_state(subparser)
@@ -285,6 +297,7 @@ def get_client_parser():
     add_subparser_queue_clear_state(subparser)
     add_subparser_queue_info(subparser)
     add_subparser_queue_kill_pid(subparser)
+    add_subparser_queue_retry_job(subparser)
 
     return parser
 

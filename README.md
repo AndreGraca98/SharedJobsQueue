@@ -436,3 +436,6 @@ Shutting down server...
   1. [ ] Better logging
   1. [x] Add kill process option
   1. [ ] Add retry process
+  1. [ ] Fix job timing in server
+  1. [ ] Lower priority levels according to number of jobs on queue
+     for some user

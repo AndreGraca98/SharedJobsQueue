@@ -116,7 +116,10 @@ class JobsTable:
     def write(df: pd.DataFrame) -> None:
         df.to_csv(JOBS_TABLE_FILENAME, sep=";", index=None)
         # Read, Write, Execute permissions so other users can change the files
-        JOBS_TABLE_FILENAME.chmod(0o777)
+        try:
+            JOBS_TABLE_FILENAME.chmod(0o777)
+        except PermissionError:
+            ...
 
     # ================================================================= #
     @staticmethod

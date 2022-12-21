@@ -251,7 +251,7 @@ class JobsTable:
 
         df = JobsTable.read()
 
-        new_df = df[(~df.id.isin(ids)) & (df.user == os.getlogin())]
+        new_df = df[~((df.id.isin(ids)) & (df.user == os.getlogin()))]
 
         print(f"Removing {df.shape[0] - new_df.shape[0]} jobs ...")
 

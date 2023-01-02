@@ -5,14 +5,19 @@ from subprocess import check_call
 from setuptools import setup
 from setuptools.command.install import install
 
-script = f"""cp run_client.py JobsClient
-cp run_server.py JobsServer
-chmod +x JobsClient
-chmod +x JobsServer
+script = f"""
+cp run_client_cmds.py jobsclient
+cp run_server.py jobsserver
+cp run_server_cmds.py jobsserver-cmds
+chmod +x jobsclient
+chmod +x jobsserver
+chmod +x jobsserver-cmds
 mkdir -p {Path.home()}/bin
 cp -r jobs_queue {Path.home()}/bin
-cp JobsClient {Path.home()}/bin
-cp JobsServer {Path.home()}/bin"""
+cp jobsclient {Path.home()}/bin
+cp jobsserver {Path.home()}/bin
+cp jobsserver-cmds {Path.home()}/bin
+"""
 
 
 class PostInstallCommand(install):
@@ -20,7 +25,7 @@ class PostInstallCommand(install):
 
     def run(self):
         install.run(self)
-        [check_call(cmd.split()) for cmd in script.split("\n")]
+        [check_call(cmd.split()) for cmd in script.split("\n") if cmd]
 
 
 setup(

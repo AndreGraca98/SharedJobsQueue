@@ -15,10 +15,9 @@ except ImportError:
         f"FileLock import does not exist in current env. Watch out for users accessing the queue at the same time..."
     )
 
-# os.umask(0000)  # so everyone can read, write and execute
+from . import JOBS_TABLE_FILENAME
 
-JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
-JOBS_TABLE_FILENAME.parent.mkdir(mode=0o770, parents=True, exist_ok=True)
+JOBS_TABLE_FILENAME.parent.mkdir(mode=0o774, parents=True, exist_ok=True)
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
 
@@ -148,7 +147,7 @@ class JobsTable:
         df.to_csv(JOBS_TABLE_FILENAME, sep=";", index=None)
         # Read, Write, Execute permissions so other users can change the files
         try:
-            JOBS_TABLE_FILENAME.chmod(0o770)
+            JOBS_TABLE_FILENAME.chmod(0o774)
         except PermissionError:
             ...
 

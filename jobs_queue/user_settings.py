@@ -6,7 +6,7 @@ from pathlib import Path
 from pprint import pprint
 from typing import Dict, List, Union
 
-from .jobs_table import JOBS_TABLE_FILENAME
+from . import JOBS_TABLE_FILENAME
 
 USER_SETTINGS = Dict[str, Dict[str, Path]]
 SETTINGS = Dict[str, USER_SETTINGS]

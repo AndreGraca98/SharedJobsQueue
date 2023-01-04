@@ -73,7 +73,7 @@ def run_server(sleep_time: int = 60):
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
     # Read, Write, Execute permissions so other users can change the files
-    log_path.touch(0o770)
+    log_path.touch(0o774)
 
     server_state = State.IDLE
 

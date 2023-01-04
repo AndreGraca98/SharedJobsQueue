@@ -7,59 +7,88 @@ from typing import Any, List, Union
 
 import pandas as pd
 import psutil
-from filelock import FileLock
 
 try:
-    from gpu_memory import GpuManager
-    from jobs import Priority, State, get_job_repr
-except ModuleNotFoundError:
-    from .gpu_memory import GpuManager
-    from .jobs import Priority, State, get_job_repr
+    from filelock import FileLock
+except ImportError:
+    print(
+        f"FileLock import does not exist in current env. Watch out for users accessing the queue at the same time..."
+    )
+
+# os.umask(0000)  # so everyone can read, write and execute
+
+JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
+JOBS_TABLE_FILENAME.parent.mkdir(mode=0o770, parents=True, exist_ok=True)
+
+lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
+
+from .gpu_memory import GpuManager
+from .jobs import Priority, State, get_job_repr
+from .user_settings import get_user_paths
 
 __all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 
 
-os.umask(0000)  # so everyone can read, write and execute
-
-JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
-JOBS_TABLE_FILENAME.parent.mkdir(mode=0o777, parents=True, exist_ok=True)
-
-lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
+def not_implemented(*args, **kwargs):
+    return f"NotImplementedError: This feature is not yet implemented"
 
 
 @lock
-def kills(id: int, dry: bool = False):
+def kills(args):
     """Kill a job
 
     Adapted from: https://stackoverflow.com/a/62066884/20478813
     """
+    id = args.id
+    dry = not args.yes
+    # extra kwargs from smtpserver.libclient
+    user_login: str = args.extra_kwargs["user_login"]
 
     df = JobsTable.read()
 
     runing = (
-        df[(df.pid != "---") & (df.user == os.getlogin())]
-        .id.values.astype(int)
-        .tolist()
+        df[(df.pid != "---") & (df.user == user_login)].id.values.astype(int).tolist()
     )
 
     pid_list = df[df.id == id]
     pid = "---" if len(pid_list.pid) == 0 else pid_list.pid.values[0]
 
     if (pid == "---") or (int(id) not in runing):
-        raise ValueError(f"Invalid job id. Expected: {runing} . Got: {id}")
+        return f"Invalid job id. Expected: {runing} . Got: {id}"
 
     if dry:
-        print(
-            f"DRY-RUN: Killing job with id={id} . If you are sure you want to kill this process use flag -y/--yes"
-        )
-        return
+        return f"DRY-RUN: Killing job with id={id} . If you are sure you want to kill this process use flag -y/--yes"
 
-    print(f"Killing job with id={id}")
+    try:
+        parent = psutil.Process(int(pid))
+        for child in parent.children(recursive=True):
+            child.kill()
+        parent.kill()
+        return f"Killed job with id={id}"
+    except:  # FIXME: specify the kill error
+        return f"Failed to kill job with id={id}"
 
-    parent = psutil.Process(int(pid))
-    for child in parent.children(recursive=True):
-        child.kill()
-    parent.kill()
+
+def show_info(*args, **kwargs):
+    pholder = " --- "
+    if JOBS_TABLE_FILENAME.exists():
+        mtime = datetime.datetime.fromtimestamp(JOBS_TABLE_FILENAME.stat().st_mtime)
+        mode = JOBS_TABLE_FILENAME.stat().st_mode
+        size = JOBS_TABLE_FILENAME.stat().st_size
+    else:
+        mtime = pholder
+        mode = pholder
+        size = pholder
+
+    msg = f"""Queue:
+  dir: {JOBS_TABLE_FILENAME.parent}
+  filename: {JOBS_TABLE_FILENAME}
+  exists: {JOBS_TABLE_FILENAME.exists()}
+  mode: {mode}
+  modified: {mtime}
+  size: {size} B
+"""
+    return msg
 
 
 class JobsTable:
@@ -76,6 +105,8 @@ class JobsTable:
             "ctime",  # Created
             "stime",  # Started
             "ftime",  # Finished
+            "env_path",
+            "working_dir",
         ]
         return pd.DataFrame({col: [] for col in job_cols})
 
@@ -117,11 +148,14 @@ class JobsTable:
         df.to_csv(JOBS_TABLE_FILENAME, sep=";", index=None)
         # Read, Write, Execute permissions so other users can change the files
         try:
-            JOBS_TABLE_FILENAME.chmod(0o777)
+            JOBS_TABLE_FILENAME.chmod(0o770)
         except PermissionError:
             ...
 
     # ================================================================= #
+    # ======================== USER INTERFACE ========================= #
+    # ================================================================= #
+
     @staticmethod
     @lock
     def add(args: argparse.Namespace):
@@ -129,11 +163,19 @@ class JobsTable:
         priority: Union[Priority, str] = args.priority
         gpu_mem: float = args.gpu_mem
         verbose: int = args.verbose
+        envname: str = args.envname
+        working_dir: str = args.working_dir
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
+
+        msg = ""
+
+        upaths = get_user_paths(user_login, envname)
 
         data = dict(
             pid="---",
             id=JobsTable.get_new_valid_id(),
-            user=os.getlogin(),
+            user=user_login,
             command=" ".join(command),
             priority=Priority.get_valid(priority).value,
             gpu_mem=int(gpu_mem),
@@ -141,23 +183,27 @@ class JobsTable:
             ctime=datetime.datetime.now(),
             stime="---",
             ftime="---",
+            env_path=upaths["env_path"],
+            working_dir=str(Path(working_dir).resolve())
+            if working_dir is not None
+            else upaths["working_dir"],
         )
 
         GpuManager.update()
         if not any(
             gpu_mem <= single_gpu for single_gpu in GpuManager.TOTAL_single.values()
         ):
-            print(
-                "WARNING: 'gpu_mem' exceeds any single gpu memory. Using multiple gpus..."
-            )
+            msg += "WARNING: 'gpu_mem' exceeds any single gpu memory. Using multiple gpus...\n"
 
         new_row = pd.DataFrame(data, index=[0])
 
         new_row["ctime"] = new_row.ctime.apply(pd.Timestamp)
 
-        print(f"Adding {get_job_repr(new_row.values, lvl=verbose)} ...")
+        msg += f"Adding {get_job_repr(new_row.values, lvl=verbose)} ..."
 
         JobsTable.write(JobsTable.read().append(new_row))
+
+        return msg
 
     @staticmethod
     @lock
@@ -166,19 +212,17 @@ class JobsTable:
         attr: str = args.attr
         new_value: str = args.new_value
         verbose: int = args.verbose
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
 
         df = JobsTable.read()
 
         if id not in JobsTable.get_jobs_ids():
-            raise ValueError(
-                f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
-            )
+            return f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
 
         df = JobsTable.read()
-        if df[(df.id == id) & (df.user == os.getlogin())].empty:
-            raise PermissionError(
-                f"User {os.getlogin()} not allowed to update job. Job belongs to {df[(df.id == id)].user} "
-            )
+        if df[(df.id == id) & (df.user == user_login)].empty:
+            return f"User {user_login} not allowed to update job. Job belongs to {df[(df.id == id)].user} "
 
         if attr == "priority":
             new_value = Priority.get_valid(new_value).value
@@ -187,16 +231,15 @@ class JobsTable:
         elif attr == "gpu_mem":
             new_value = float(new_value)
         else:
-            print(f"Job has no attribute/can't update attribute={attr}")
-            return
+            return f"Job has no attribute/can't update attribute={attr}"
 
-        print(
-            f"Updating {get_job_repr(df.loc[df.id == id].values, lvl=verbose)} . {attr}={df.loc[df.id == id][attr].values[0]} -> {attr}={new_value} ..."
-        )
+        msg = f"Updating {get_job_repr(df.loc[df.id == id].values, lvl=verbose)} . {attr}={df.loc[df.id == id][attr].values[0]} -> {attr}={new_value} ..."
 
         df.loc[df.id == id, attr] = new_value
 
         JobsTable.write(df)
+
+        return msg
 
     @staticmethod
     @lock
@@ -204,9 +247,7 @@ class JobsTable:
         op: str = args.op
         verbose: int = args.verbose
         if op not in ["ids", "priority", "all"]:
-            raise ValueError(
-                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
-            )
+            return f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
 
         df = JobsTable.read()
         ids = df[df["state"] == State.WAITING.value].id.values  # op = 'all'
@@ -221,15 +262,15 @@ class JobsTable:
 
         [JobsTable.set_job_state(id, state=State.PAUSED) for id in ids]
 
+        return f"Pausing {op}: {ids}"
+
     @staticmethod
     @lock
     def unpause(args: argparse.Namespace):
         op: str = args.op
         verbose: int = args.verbose
         if op not in ["ids", "priority", "all"]:
-            raise ValueError(
-                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
-            )
+            return f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
         df = JobsTable.read()
         ids = df[df["state"] == State.PAUSED.value].id.values  # pause = 'all'
 
@@ -243,19 +284,25 @@ class JobsTable:
 
         [JobsTable.set_job_state(id, state=State.WAITING) for id in ids]
 
+        return f"Resuming {op}: {ids}"
+
     @staticmethod
     @lock
     def remove(args: argparse.Namespace):
         ids: List[int] = args.ids
         verbose: int = args.verbose
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
 
         df = JobsTable.read()
 
-        new_df = df[~((df.id.isin(ids)) & (df.user == os.getlogin()))]
+        new_df = df[~((df.id.isin(ids)) & (df.user == user_login))]
 
-        print(f"Removing {df.shape[0] - new_df.shape[0]} jobs ...")
+        msg = f"Removing {df.shape[0] - new_df.shape[0]} jobs ..."
 
         JobsTable.write(new_df)
+
+        return msg
 
     @staticmethod
     def show(args: argparse.Namespace):
@@ -264,27 +311,22 @@ class JobsTable:
 
         if "id" in args and args.id is not None:
             if args.id in JobsTable.get_jobs_ids():
-                print(get_job_repr(df.loc[df.id == args.id].values, lvl=verbose))
-                return
+                return get_job_repr(df.loc[df.id == args.id].values, lvl=verbose)
 
-            print(
-                f"Job with id={args.id} does not exist. Expected: {JobsTable.get_jobs_ids()}"
-            )
-            return
+            return f"Job with id={args.id} does not exist. Expected: {JobsTable.get_jobs_ids()}"
 
         elif "state" in args and args.state is not None:
             jobs = df[df.state == State.get_valid(args.state).value]
             str_ = "Jobs:\n"
             for job in jobs.iterrows():
                 str_ += f"  {get_job_repr([job[1].values], lvl=verbose)}\n"
-            print(str_)
-            return
+            return str_
+
         else:
             str_ = "Jobs:\n"
             for job in df.iterrows():
                 str_ += f"  {get_job_repr([job[1].values], lvl=verbose)}\n"
-            print(str_)
-            return
+            return str_
 
     @staticmethod
     @lock
@@ -292,13 +334,10 @@ class JobsTable:
         yes: bool = args.yes
 
         if not yes:
-            raise ValueError(
-                "Aborting clear command ! If you are sure you want to clear all jobs run the same command with the flag -y or --yes"
-            )
-
-        print("Clearing all jobs...")
+            return "Aborting clear command ! If you are sure you want to clear all jobs run the same command with the flag -y or --yes"
 
         JobsTable.write(JobsTable.get_empty_table())
+        return "Clearing all jobs..."
 
     @staticmethod
     @lock
@@ -307,15 +346,18 @@ class JobsTable:
 
         df = JobsTable.read()
 
-        print(
-            f"Clearing {df[df.state == State.get_valid(state).value ].shape[0]} jobs ..."
-        )
+        msg = f"Clearing {df[df.state == State.get_valid(state).value ].shape[0]} jobs ..."
 
         df_wo_state = df[df.state != State.get_valid(state).value]
 
         JobsTable.write(df_wo_state)
 
+        return msg
+
     # ================================================================= #
+    # ================================================================= #
+    # ================================================================= #
+
     @staticmethod
     @lock
     def set_job_state(id: int, state: Union[State, str]):

@@ -1,18 +1,14 @@
 import argparse
-import datetime
 from typing import List
 
-try:
-    from jobs_table import JOBS_TABLE_FILENAME, JobsTable, kills
-except ModuleNotFoundError:
-    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable, kills
+from .common import operations
 
 __all__ = [
-    "get_server_parser",
     "get_client_parser",
     "get_args",
     "get_args_from_str",
     "get_args_from_list",
+    "operations",
 ]
 
 
@@ -36,27 +32,6 @@ class VerboseAction(argparse.Action):
         setattr(args, self.dest, max(self.option_dict.values()))
 
 
-def get_server_parser():
-    parser = argparse.ArgumentParser(
-        "Server Jobs Queue",
-        description="Run jobs from the jobs queue",
-    )
-    parser.add_argument(
-        "time",
-        type=int,
-        nargs="?",
-        default=60,
-        help="Idle time (s). NOTE: It is recommended to use at least 60 seconds of interval time when using this tool to train diferent experiments using gpus so they have enough time to load the model and data instead of throwing an error.",
-    )
-    parser.add_argument(
-        "--threads",
-        type=int,
-        default=1,
-        help="Number of jobs allowed to run at the same time",
-    )
-    return parser
-
-
 def get_client_parser():
     parser = argparse.ArgumentParser(
         "Client Jobs Queue",
@@ -69,7 +44,7 @@ def get_client_parser():
         )
 
     parse_verbose(parser=parser)
-    parser.set_defaults(operation=JobsTable.show)
+    parser.set_defaults(operation=operations.show)
     subparser = parser.add_subparsers()
 
     # Show
@@ -78,7 +53,7 @@ def get_client_parser():
         parser_show_id.add_argument(
             "id", nargs="?", type=int, default=None, help="Show job with specified id"
         )
-        parser_show_id.set_defaults(operation=JobsTable.show)
+        parser_show_id.set_defaults(operation=operations.show)
         parse_verbose(parser=parser_show_id)
 
     # Show state
@@ -93,7 +68,7 @@ def get_client_parser():
             default=None,
             help="Show jobs with specified state",
         )
-        parser_show_state.set_defaults(operation=JobsTable.show)
+        parser_show_state.set_defaults(operation=operations.show)
         parse_verbose(parser=parser_show_state)
 
     # Add
@@ -101,6 +76,22 @@ def get_client_parser():
         parser_add = subparser.add_parser("add", help="Add a task to the queue")
         parser_add.add_argument(
             "command", type=str, action="store", nargs="+", help="Command to run"
+        )
+        parser_add.add_argument(
+            "--env",
+            "--envname",
+            type=str,
+            default="base",
+            dest="envname",
+            help="Conda environment name",
+        )
+        parser_add.add_argument(
+            "--wd",
+            "--working_dir",
+            type=str,
+            default=None,
+            dest="working_dir",
+            help="Working directory. If not set uses the dir associated with the env name",
         )
         parser_add.add_argument(
             "-p",
@@ -122,7 +113,7 @@ def get_client_parser():
             default=0,
             help="GPU memory in MB. If cmd does not require the usage of graphical memory set --gpu_mem to 0.",
         )
-        parser_add.set_defaults(operation=JobsTable.add)
+        parser_add.set_defaults(operation=operations.add)
         parse_verbose(parser=parser_add)
 
     # Remove
@@ -137,7 +128,7 @@ def get_client_parser():
             nargs="+",
             help="Job ids to remove from the queue",
         )
-        parser_remove.set_defaults(operation=JobsTable.remove)
+        parser_remove.set_defaults(operation=operations.remove)
         parse_verbose(parser=parser_remove)
 
     # Update
@@ -157,7 +148,7 @@ def get_client_parser():
         parser_update.add_argument(
             "new_value", type=str, help="Job attribute new value"
         )
-        parser_update.set_defaults(operation=JobsTable.update)
+        parser_update.set_defaults(operation=operations.update)
         parse_verbose(parser=parser_update)
 
     # Pause/UnPause
@@ -201,7 +192,7 @@ def get_client_parser():
         parser_pause = subparser.add_parser("pause", help="Pause tasks from the queue")
         add_subparser_queue_pause_unpause(parser_pause)
 
-        parser_pause.set_defaults(operation=JobsTable.pause)
+        parser_pause.set_defaults(operation=operations.pause)
         parse_verbose(parser=parser_pause)
 
     # Unpause
@@ -211,7 +202,7 @@ def get_client_parser():
         )
         add_subparser_queue_pause_unpause(parser_pause)
 
-        parser_pause.set_defaults(operation=JobsTable.unpause)
+        parser_pause.set_defaults(operation=operations.unpause)
         parse_verbose(parser=parser_pause)
 
     # Clear
@@ -222,7 +213,7 @@ def get_client_parser():
         parser_clear.add_argument(
             "-y", "--yes", action="store_true", help="Clear Job Queue"
         )
-        parser_clear.set_defaults(operation=JobsTable.clear)
+        parser_clear.set_defaults(operation=operations.clear)
 
     # Clear State
     def add_subparser_queue_clear_state(subparser):
@@ -230,36 +221,12 @@ def get_client_parser():
             "clear-state", help="Clears all state tasks from the queue"
         )
         parser_clear_state.add_argument("state", type=str, help="Clear Job State")
-        parser_clear_state.set_defaults(operation=JobsTable.clear_state)
+        parser_clear_state.set_defaults(operation=operations.clear_state)
 
     # Info
     def add_subparser_queue_info(subparser):
         parser_info = subparser.add_parser("info", help="Shows queue info")
-
-        def show_info(*args, **kwargs):
-            pholder = " --- "
-            if JOBS_TABLE_FILENAME.exists():
-                mtime = datetime.datetime.fromtimestamp(
-                    JOBS_TABLE_FILENAME.stat().st_mtime
-                )
-                mode = JOBS_TABLE_FILENAME.stat().st_mode
-                size = JOBS_TABLE_FILENAME.stat().st_size
-            else:
-                mtime = pholder
-                mode = pholder
-                size = pholder
-
-            msg = f"""Queue:
-  dir: {JOBS_TABLE_FILENAME.parent}
-  filename: {JOBS_TABLE_FILENAME}
-  exists: {JOBS_TABLE_FILENAME.exists()}
-  mode: {mode}
-  modified: {mtime}
-  size: {size} B
-"""
-            print(msg)
-
-        parser_info.set_defaults(operation=show_info)
+        parser_info.set_defaults(operation=operations.info)
 
     # Kill pid
     def add_subparser_queue_kill_pid(subparser):
@@ -270,9 +237,7 @@ def get_client_parser():
         parser_kill_pid.add_argument(
             "-y", "--yes", action="store_true", help="If certain use flag -y/--yes"
         )
-        parser_kill_pid.set_defaults(
-            operation=lambda args: kills(args.id, dry=not args.yes)
-        )
+        parser_kill_pid.set_defaults(operation=operations.kill)
 
     # Retry job
     def add_subparser_queue_retry_job(subparser):
@@ -281,10 +246,7 @@ def get_client_parser():
         )
         parser_retry.add_argument("id", type=int, help="Job id")
 
-        def not_implemented():
-            raise NotImplementedError(f"This feature is not yet implemented")
-
-        parser_retry.set_defaults(operation=lambda args: not_implemented())
+        parser_retry.set_defaults(operation=operations.retry)
 
     add_subparser_queue_show(subparser)
     add_subparser_queue_show_state(subparser)
@@ -302,22 +264,16 @@ def get_client_parser():
     return parser
 
 
-def get_args(client: bool = True):
-    if client:
-        return get_client_parser().parse_args()
-    return get_server_parser().parse_args()
+def get_args():
+    return get_client_parser().parse_args()
 
 
-def get_args_from_str(_str: str, client: bool = True):
-    if client:
-        return get_client_parser().parse_args(_str.split())
-    return get_server_parser().parse_args(_str.split())
+def get_args_from_str(_str: str):
+    return get_client_parser().parse_args(_str.split())
 
 
-def get_args_from_list(_list: List, client: bool = True):
-    if client:
-        return get_client_parser().parse_args(_list)
-    return get_server_parser().parse_args(_list)
+def get_args_from_list(_list: List):
+    return get_client_parser().parse_args(_list)
 
 
 # ENDFILE

@@ -3,13 +3,13 @@
 ![badge](https://img.shields.io/github/package-json/v/AndreGraca98/SharedJobsQueue?filename=jobs_queue%2Fversion.json&label=jobs-queue&logo=python&logoColor=yellow)
 
 Add and remove jobs to a queue that can be shared by multiple users to run
-scripts with different priority levels. Uses subprocess.run to run the commands.
+scripts with different priority levels. Uses subprocess.Popen to run the commands.
 
 - [Job queues](#job-queues)
   - [Requirements](#requirements)
   - [Environment](#environment)
-  - [Run the server](#run-the-server)
-  - [Run the client](#run-the-client)
+  - [Run the server (OUTDATED)](#run-the-server-outdated)
+  - [Run the client (OUTDATED)](#run-the-client-outdated)
     - [1. Show jobs](#1-show-jobs)
     - [2. Show jobs with state](#2-show-jobs-with-state)
     - [3. Add job](#3-add-job)
@@ -28,7 +28,6 @@ scripts with different priority levels. Uses subprocess.run to run the commands.
 
 - pandas
 - easydict
-- gpustat
 - filelock
 
 ## Environment
@@ -47,7 +46,7 @@ source ~/.profile
 
 ```
 
-## Run the server
+## Run the server (OUTDATED)
 
 [JobsServer](/jobs_queue/server.py#L126)
 
@@ -71,7 +70,7 @@ optional arguments:
   --threads THREADS  Number of jobs allowed to run at the same time
 ```
 
-## Run the client
+## Run the client (OUTDATED)
 
 [JobsClient](/jobs_queue/client.py#L14)
 

@@ -1,6 +1,7 @@
 import argparse
 import json
 import pprint
+import subprocess
 import time
 from dataclasses import dataclass
 from datetime import timedelta
@@ -33,7 +34,7 @@ class ReprClss(type):
 
 
 class GpuManager(metaclass=ReprClss):
-    "Uses gpustats to get the graphical memory statistics"
+    "Uses nvidia-smi to get the graphical memory statistics"
     USED_single: Dict[int, int] = dict()
     USED: int = None
     TOTAL_single: Dict[int, int] = dict()
@@ -42,22 +43,44 @@ class GpuManager(metaclass=ReprClss):
     FREE: int = None
 
     def update():
-        "Update Manager variables and return output of gpustat"
-        out = EDict(json.loads(check_output(f"gpustat --json".split())))
+        "Update Manager variables and return output of nvidia-smi"
+        res = subprocess.run(
+            "nvidia-smi -q -d MEMORY",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
-        GpuManager.USED_single = {gpu.index: gpu["memory.used"] for gpu in out.gpus}
-        GpuManager.TOTAL_single = {gpu.index: gpu["memory.total"] for gpu in out.gpus}
-        GpuManager.FREE_single = {
-            gpu.index: GpuManager.TOTAL_single[gpu.index]
-            - GpuManager.USED_single[gpu.index]
-            for gpu in out.gpus
-        }
+        lines = res.stdout.decode().split("\n")
+
+        gpu_line_idxs = [i for i, line in enumerate(lines) if line.startswith("GPU")]
+
+        gpu_lines = [lines[i + 2 : i + 5] for i in gpu_line_idxs]
+
+        def get_line_values(line: str, key: str):
+            return (
+                line.replace(" ", "")
+                .replace(f"{key.capitalize()}:", "")
+                .replace("MiB", "")
+            )
+
+        singles_dict = dict()
+        for i, lines in enumerate(gpu_lines):
+            singles_dict["USED_single"] = dict()
+            singles_dict["TOTAL_single"] = dict()
+            singles_dict["FREE_single"] = dict()
+            for line, key in zip(lines, ["Total", "Used", "Free"]):
+                singles_dict[key.upper() + "_single"][i] = int(
+                    get_line_values(line, key)
+                )
+
+        GpuManager.USED_single = singles_dict["USED_single"]
+        GpuManager.FREE_single = singles_dict["FREE_single"]
+        GpuManager.TOTAL_single = singles_dict["TOTAL_single"]
 
         GpuManager.USED = sum(GpuManager.USED_single.values())
         GpuManager.TOTAL = sum(GpuManager.TOTAL_single.values())
         GpuManager.FREE = sum(GpuManager.FREE_single.values())
-
-        return out
 
     def single_gpu_available(gpu_mem: int) -> Union[int, bool]:
         "Return the gpu id that is being less used if free amount matches needed gpu_mem otherwise return False"
@@ -99,6 +122,8 @@ class GpuManager(metaclass=ReprClss):
             return GpuManager.total_gpu_available(gpu_mem)
 
     def get_running_processes() -> List[Dict[str, Any]]:
+        raise NotImplementedError
+
         def get_real_cmd(pid):
             return check_output(f"ps -p {pid} -o cmd=".split()).strip().decode()
 
@@ -171,7 +196,7 @@ def get_parser():
 
 if __name__ == "__main__":
     print(GpuManager)
-    pprint.pprint(GpuManager.get_running_processes())
+    # pprint.pprint(GpuManager.get_running_processes())
 
     # args = get_parser().parse_args()
     # print(args)

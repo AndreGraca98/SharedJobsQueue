@@ -1,13 +1,9 @@
 import argparse
-from pathlib import Path
 from typing import List
-
-from easydict import EasyDict as EDict
 
 from .common import operations
 
 __all__ = [
-    "get_server_parser",
     "get_client_parser",
     "get_args",
     "get_args_from_str",
@@ -34,27 +30,6 @@ class VerboseAction(argparse.Action):
 
         self.option_dict[option_string] = vals
         setattr(args, self.dest, max(self.option_dict.values()))
-
-
-def get_server_parser():
-    parser = argparse.ArgumentParser(
-        "Server Jobs Queue",
-        description="Run jobs from the jobs queue",
-    )
-    parser.add_argument(
-        "time",
-        type=int,
-        nargs="?",
-        default=60,
-        help="Idle time (s). NOTE: It is recommended to use at least 60 seconds of interval time when using this tool to train diferent experiments using gpus so they have enough time to load the model and data instead of throwing an error.",
-    )
-    parser.add_argument(
-        "--threads",
-        type=int,
-        default=1,
-        help="Number of jobs allowed to run at the same time",
-    )
-    return parser
 
 
 def get_client_parser():
@@ -101,6 +76,22 @@ def get_client_parser():
         parser_add = subparser.add_parser("add", help="Add a task to the queue")
         parser_add.add_argument(
             "command", type=str, action="store", nargs="+", help="Command to run"
+        )
+        parser_add.add_argument(
+            "--env",
+            "--envname",
+            type=str,
+            default="base",
+            dest="envname",
+            help="Conda environment name",
+        )
+        parser_add.add_argument(
+            "--wd",
+            "--working_dir",
+            type=str,
+            default=None,
+            dest="working_dir",
+            help="Working directory. If not set uses the dir associated with the env name",
         )
         parser_add.add_argument(
             "-p",
@@ -235,31 +226,6 @@ def get_client_parser():
     # Info
     def add_subparser_queue_info(subparser):
         parser_info = subparser.add_parser("info", help="Shows queue info")
-
-        # TODO: move show info function
-        #         def show_info(*args, **kwargs):
-        #             pholder = " --- "
-        #             if JOBS_TABLE_FILENAME.exists():
-        #                 mtime = datetime.datetime.fromtimestamp(
-        #                     JOBS_TABLE_FILENAME.stat().st_mtime
-        #                 )
-        #                 mode = JOBS_TABLE_FILENAME.stat().st_mode
-        #                 size = JOBS_TABLE_FILENAME.stat().st_size
-        #             else:
-        #                 mtime = pholder
-        #                 mode = pholder
-        #                 size = pholder
-
-        #             msg = f"""Queue:
-        #   dir: {JOBS_TABLE_FILENAME.parent}
-        #   filename: {JOBS_TABLE_FILENAME}
-        #   exists: {JOBS_TABLE_FILENAME.exists()}
-        #   mode: {mode}
-        #   modified: {mtime}
-        #   size: {size} B
-        # """
-        #             print(msg)
-
         parser_info.set_defaults(operation=operations.info)
 
     # Kill pid
@@ -271,7 +237,6 @@ def get_client_parser():
         parser_kill_pid.add_argument(
             "-y", "--yes", action="store_true", help="If certain use flag -y/--yes"
         )
-        # operation=lambda args: kills(args.id, dry=not args.yes)
         parser_kill_pid.set_defaults(operation=operations.kill)
 
     # Retry job
@@ -281,7 +246,6 @@ def get_client_parser():
         )
         parser_retry.add_argument("id", type=int, help="Job id")
 
-        # parser_retry.set_defaults(operation=lambda args: not_implemented())
         parser_retry.set_defaults(operation=operations.retry)
 
     add_subparser_queue_show(subparser)
@@ -300,22 +264,16 @@ def get_client_parser():
     return parser
 
 
-def get_args(client: bool = True):
-    if client:
-        return get_client_parser().parse_args()
-    return get_server_parser().parse_args()
+def get_args():
+    return get_client_parser().parse_args()
 
 
-def get_args_from_str(_str: str, client: bool = True):
-    if client:
-        return get_client_parser().parse_args(_str.split())
-    return get_server_parser().parse_args(_str.split())
+def get_args_from_str(_str: str):
+    return get_client_parser().parse_args(_str.split())
 
 
-def get_args_from_list(_list: List, client: bool = True):
-    if client:
-        return get_client_parser().parse_args(_list)
-    return get_server_parser().parse_args(_list)
+def get_args_from_list(_list: List):
+    return get_client_parser().parse_args(_list)
 
 
 # ENDFILE

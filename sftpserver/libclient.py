@@ -1,4 +1,7 @@
+import os
 import selectors
+import string
+from random import choice
 from socket import socket
 from typing import Any, Dict
 
@@ -43,8 +46,12 @@ class ClientMessage(MessageABC):
     def create_message(self):
         "Send client request"
 
+        extra_kwargs = dict(user_login=os.getlogin())
+
         req = {
-            "content_bytes": self._json_encode(self.message_request, UTF8),
+            "content_bytes": self._json_encode(
+                dict(**self.message_request, extra_kwargs=extra_kwargs), UTF8
+            ),
             "content_type": "text/json",
             "content_encoding": UTF8,
         }

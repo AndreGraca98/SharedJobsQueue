@@ -8,13 +8,9 @@ from socket import socket
 
 from easydict import EasyDict as EDict
 
-sys.path.insert(0, "jobs_queue")
-from jobs_queue.jobs_table import JobsTable, kills, not_implemented, show_info
-
 HOST: str = "127.0.0.1"
 PORT: int = 65432
 UTF8: str = "utf-8"
-
 
 operations = EDict(
     show="show",
@@ -31,21 +27,27 @@ operations = EDict(
 )
 
 
-callable_operations = dict(
-    show=JobsTable.show,
-    add=JobsTable.add,
-    remove=JobsTable.remove,
-    update=JobsTable.update,
-    pause=JobsTable.pause,
-    unpause=JobsTable.unpause,
-    clear=JobsTable.clear,
-    clear_state=JobsTable.clear_state,
-    kill=kills,
-    retry=not_implemented,
-    info=show_info,
-)
+try:
+    sys.path.insert(0, "jobs_queue")
+    from jobs_queue.jobs_table import JobsTable, kills, not_implemented, show_info
 
-assert callable_operations.keys() == operations.keys()
+    callable_operations = dict(
+        show=JobsTable.show,
+        add=JobsTable.add,
+        remove=JobsTable.remove,
+        update=JobsTable.update,
+        pause=JobsTable.pause,
+        unpause=JobsTable.unpause,
+        clear=JobsTable.clear,
+        clear_state=JobsTable.clear_state,
+        kill=kills,
+        retry=not_implemented,
+        info=show_info,
+    )
+    assert callable_operations.keys() == operations.keys()
+
+except TypeError:  # Lock mechanism
+    ...
 
 
 class MessageABC(ABC):
@@ -83,13 +85,17 @@ class MessageABC(ABC):
         tiow.close()
         return obj
 
-    def _create_message(self, *, content_bytes, content_type, content_encoding):
+    def _create_message(
+        self, *, content_bytes, content_type, content_encoding, **kwargs
+    ):
         jsonheader = {
             "byteorder": sys.byteorder,
             "content-type": content_type,
             "content-encoding": content_encoding,
             "content-length": len(content_bytes),
         }
+        jsonheader.update(kwargs)
+
         jsonheader_bytes = self._json_encode(jsonheader, UTF8)
         message_hdr = struct.pack(">H", len(jsonheader_bytes))
         message = message_hdr + jsonheader_bytes + content_bytes

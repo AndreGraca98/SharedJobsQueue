@@ -5,11 +5,11 @@ import socket
 from typing import Any, Dict
 
 try:
-    from .args import get_client_parser
+    from .client_args import get_client_parser
     from .common import HOST, PORT
     from .libclient import ClientMessage
 except ModuleNotFoundError:
-    from args import get_client_parser
+    from sftpserver.client_args import get_client_parser
     from common import HOST, PORT
     from libclient import ClientMessage
 

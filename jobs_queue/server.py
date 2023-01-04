@@ -3,6 +3,7 @@
 
 import datetime
 import os
+import pwd
 import subprocess
 import time
 from enum import Enum
@@ -11,18 +12,18 @@ from pathlib import Path
 from typing import Union
 
 try:
-    from args import get_args
     from gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
     from jobs import State as JobState
     from jobs import get_job_repr
     from jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from server_args import get_args
     from tools import ftext
 except ModuleNotFoundError:
-    from .args import get_args
     from .gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
     from .jobs import State as JobState
     from .jobs import get_job_repr
     from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
+    from .server_args import get_args
     from .tools import ftext
 
 __all__ = ["main_server"]
@@ -47,12 +48,40 @@ class Log(Enum):
         print(str_)
 
 
+def get_process_as_user(cmd: str, username: str, working_dir: str):
+    def demote(user_uid: int, user_gid: int):
+        def result():
+            os.setgid(user_gid)
+            os.setuid(user_uid)
+
+        return result
+
+    pw_record = pwd.getpwnam(username)
+
+    env = os.environ.copy()
+
+    env["HOME"] = pw_record.pw_dir
+    env["LOGNAME"] = pw_record.pw_name
+    env["PWD"] = working_dir
+    env["USER"] = pw_record.pw_name
+
+    process = subprocess.Popen(
+        cmd,
+        preexec_fn=demote(pw_record.pw_uid, pw_record.pw_gid),
+        cwd=working_dir,
+        env=env,
+        shell=True,  # To use cmd as a string and catch errors in main func
+    )
+
+    return process
+
+
 def run_server(sleep_time: int = 60):
-    os.umask(0000)  # so everyone can read, write and execute
+    # os.umask(0000)  # so everyone can read, write and execute
 
     log_path = JOBS_TABLE_FILENAME.with_suffix(".log")
     # Read, Write, Execute permissions so other users can change the files
-    log_path.touch(0o777)
+    log_path.touch(0o770)
 
     server_state = State.IDLE
 
@@ -67,7 +96,7 @@ def run_server(sleep_time: int = 60):
 
                 # Log
                 Log.INFO(f"Idle ...\n", log_path)
-                
+
                 continue
 
             elif job is None and server_state is State.IDLE:
@@ -87,6 +116,8 @@ def run_server(sleep_time: int = 60):
                 log_path,
             )
 
+            # TODO: Add other options to use the device. Also maybe customizable
+            # by user in settings
             if job.gpu_mem.values[0] == 0.0:
                 device = ""  # FIXME : Use 'cpu' or ''
             elif device is True:
@@ -94,10 +125,13 @@ def run_server(sleep_time: int = 60):
             else:
                 device = f"cuda:{device}"  # --device cuda:{device}
 
-            proc = subprocess.Popen(
-                f"{job.command.values[0]} {device}",
-                shell=True,
-                stderr=open(log_path, "a+"),
+            cmd: str = job.command.values[0]
+            cmd = cmd.replace("python", job.env_path.values[0])
+
+            proc = get_process_as_user(
+                f"{cmd} {device}",
+                job.user.values[0],
+                job.working_dir.values[0],
             )
 
             # Update job pid and start time
@@ -146,7 +180,7 @@ def run_server(sleep_time: int = 60):
 
 
 def main_server():
-    args = get_args(client=False)
+    args = get_args()
     sleep_time = args.time
     nthreads = args.threads
 

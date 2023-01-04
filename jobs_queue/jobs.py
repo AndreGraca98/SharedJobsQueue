@@ -96,6 +96,9 @@ def get_job_repr(row_values: List[Any], lvl: int = 1) -> str:
         ctime,
         stime,
         ftime,
+        env_path,
+        working_dir,
+        *extra,
     ) = row_values[0]
 
     state = State.get_valid(state)
@@ -111,6 +114,7 @@ def get_job_repr(row_values: List[Any], lvl: int = 1) -> str:
     ftime = ftime if ftime == "---" else f"{ftime:%m/%d/%Y-%H:%M:%S}"
 
     # FIXME: diferent ways to represent time
+    # TODO: change all reprs
 
     if lvl < 0:
         return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
@@ -124,7 +128,7 @@ def get_job_repr(row_values: List[Any], lvl: int = 1) -> str:
     if lvl == 2:
         return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
 
-    return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime})'
+    return f'Job(pid={pid}, id={int(id)}, user={user}, command="{cmd_str}", priority={priority.name}, gpu_mem={gpu_mem}, state={state.name}, ctime={ctime:%m/%d/%Y-%H:%M:%S}, stime={stime}, ftime={ftime}, env_path={env_path}, working_dir={working_dir})'
 
 
 # ENDFILE

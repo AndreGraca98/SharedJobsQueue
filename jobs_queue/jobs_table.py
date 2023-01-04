@@ -3,21 +3,18 @@ import datetime
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from tkinter.messagebox import NO
 from typing import Any, List, Union
 
 import pandas as pd
 import psutil
-from filelock import FileLock
 
 try:
-    from gpu_memory import GpuManager
-    from jobs import Priority, State, get_job_repr
-except ModuleNotFoundError:
-    from .gpu_memory import GpuManager
-    from .jobs import Priority, State, get_job_repr
-
-__all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
-
+    from filelock import FileLock
+except ImportError:
+    print(
+        f"FileLock import does not exist in current env. Watch out for users accessing the queue at the same time..."
+    )
 
 # os.umask(0000)  # so everyone can read, write and execute
 
@@ -25,6 +22,17 @@ JOBS_TABLE_FILENAME = Path("/var/tmp/jobs_queue/jobs_table.csv")
 JOBS_TABLE_FILENAME.parent.mkdir(mode=0o770, parents=True, exist_ok=True)
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
+
+try:
+    from gpu_memory import GpuManager
+    from jobs import Priority, State, get_job_repr
+    from user_settings import get_user_paths, read_settings
+except ModuleNotFoundError:
+    from .gpu_memory import GpuManager
+    from .jobs import Priority, State, get_job_repr
+    from .user_settings import get_user_paths, read_settings
+
+__all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 
 
 def not_implemented(*args, **kwargs):
@@ -39,13 +47,13 @@ def kills(args):
     """
     id = args.id
     dry = not args.yes
+    # extra kwargs from smtpserver.libclient
+    user_login: str = args.extra_kwargs["user_login"]
 
     df = JobsTable.read()
 
     runing = (
-        df[(df.pid != "---") & (df.user == os.getlogin())]
-        .id.values.astype(int)
-        .tolist()
+        df[(df.pid != "---") & (df.user == user_login)].id.values.astype(int).tolist()
     )
 
     pid_list = df[df.id == id]
@@ -103,6 +111,8 @@ class JobsTable:
             "ctime",  # Created
             "stime",  # Started
             "ftime",  # Finished
+            "env_path",
+            "working_dir",
         ]
         return pd.DataFrame({col: [] for col in job_cols})
 
@@ -149,6 +159,9 @@ class JobsTable:
             ...
 
     # ================================================================= #
+    # ======================== USER INTERFACE ========================= #
+    # ================================================================= #
+
     @staticmethod
     @lock
     def add(args: argparse.Namespace):
@@ -156,13 +169,19 @@ class JobsTable:
         priority: Union[Priority, str] = args.priority
         gpu_mem: float = args.gpu_mem
         verbose: int = args.verbose
+        envname: str = args.envname
+        working_dir: str = args.working_dir
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
 
         msg = ""
+
+        upaths = get_user_paths(user_login, envname)
 
         data = dict(
             pid="---",
             id=JobsTable.get_new_valid_id(),
-            user=os.getlogin(),
+            user=user_login,
             command=" ".join(command),
             priority=Priority.get_valid(priority).value,
             gpu_mem=int(gpu_mem),
@@ -170,6 +189,10 @@ class JobsTable:
             ctime=datetime.datetime.now(),
             stime="---",
             ftime="---",
+            env_path=upaths["env_path"],
+            working_dir=str(Path(working_dir).resolve())
+            if working_dir is not None
+            else upaths["working_dir"],
         )
 
         GpuManager.update()
@@ -195,19 +218,17 @@ class JobsTable:
         attr: str = args.attr
         new_value: str = args.new_value
         verbose: int = args.verbose
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
 
         df = JobsTable.read()
 
         if id not in JobsTable.get_jobs_ids():
-            raise ValueError(
-                f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
-            )
+            return f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
 
         df = JobsTable.read()
-        if df[(df.id == id) & (df.user == os.getlogin())].empty:
-            raise PermissionError(
-                f"User {os.getlogin()} not allowed to update job. Job belongs to {df[(df.id == id)].user} "
-            )
+        if df[(df.id == id) & (df.user == user_login)].empty:
+            return f"User {user_login} not allowed to update job. Job belongs to {df[(df.id == id)].user} "
 
         if attr == "priority":
             new_value = Priority.get_valid(new_value).value
@@ -232,9 +253,7 @@ class JobsTable:
         op: str = args.op
         verbose: int = args.verbose
         if op not in ["ids", "priority", "all"]:
-            raise ValueError(
-                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
-            )
+            return f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
 
         df = JobsTable.read()
         ids = df[df["state"] == State.WAITING.value].id.values  # op = 'all'
@@ -257,9 +276,7 @@ class JobsTable:
         op: str = args.op
         verbose: int = args.verbose
         if op not in ["ids", "priority", "all"]:
-            raise ValueError(
-                f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
-            )
+            return f"Expected args.op in ['ids', 'priority', 'all'] . Got: {op}"
         df = JobsTable.read()
         ids = df[df["state"] == State.PAUSED.value].id.values  # pause = 'all'
 
@@ -280,10 +297,12 @@ class JobsTable:
     def remove(args: argparse.Namespace):
         ids: List[int] = args.ids
         verbose: int = args.verbose
+        # extra kwargs from smtpserver.libclient
+        user_login: str = args.extra_kwargs["user_login"]
 
         df = JobsTable.read()
 
-        new_df = df[~((df.id.isin(ids)) & (df.user == os.getlogin()))]
+        new_df = df[~((df.id.isin(ids)) & (df.user == user_login))]
 
         msg = f"Removing {df.shape[0] - new_df.shape[0]} jobs ..."
 
@@ -342,6 +361,9 @@ class JobsTable:
         return msg
 
     # ================================================================= #
+    # ================================================================= #
+    # ================================================================= #
+
     @staticmethod
     @lock
     def set_job_state(id: int, state: Union[State, str]):

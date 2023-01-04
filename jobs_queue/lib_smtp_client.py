@@ -1,14 +1,9 @@
 import os
 import selectors
-import string
-from random import choice
 from socket import socket
 from typing import Any, Dict
 
-try:
-    from .common import UTF8, MessageABC
-except ModuleNotFoundError:
-    from common import UTF8, MessageABC
+from .common import UTF8, MessageABC
 
 
 class ClientMessage(MessageABC):

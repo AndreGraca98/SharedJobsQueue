@@ -6,10 +6,7 @@ from pathlib import Path
 from pprint import pprint
 from typing import Dict, List, Union
 
-try:
-    from jobs_table import JOBS_TABLE_FILENAME
-except ModuleNotFoundError:
-    from .jobs_table import JOBS_TABLE_FILENAME
+from .jobs_table import JOBS_TABLE_FILENAME
 
 USER_SETTINGS = Dict[str, Dict[str, Path]]
 SETTINGS = Dict[str, USER_SETTINGS]
@@ -194,10 +191,12 @@ def get_parser():
     return parser
 
 
-if __name__ == "__main__":
-    pass
-
+def main():
     parser = get_parser()
     args = parser.parse_args()
 
     args.operation(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -5,12 +5,8 @@ import selectors
 import socket
 import traceback
 
-try:
-    from .common import HOST, PORT
-    from .libserver import ServerMessage
-except ModuleNotFoundError:
-    from common import HOST, PORT
-    from libserver import ServerMessage
+from .common import HOST, PORT
+from .lib_smtp_server import ServerMessage
 
 
 def accept_wrapper(sel, conn):

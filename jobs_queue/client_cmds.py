@@ -4,14 +4,9 @@ import selectors
 import socket
 from typing import Any, Dict
 
-try:
-    from .client_args import get_client_parser
-    from .common import HOST, PORT
-    from .libclient import ClientMessage
-except ModuleNotFoundError:
-    from sftpserver.client_args import get_client_parser
-    from common import HOST, PORT
-    from libclient import ClientMessage
+from .client_args import get_client_parser
+from .common import HOST, PORT
+from .lib_smtp_client import ClientMessage
 
 
 def start_connection(sel, request: Dict[str, Any]):

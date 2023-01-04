@@ -7,16 +7,23 @@ from setuptools.command.install import install
 
 script = f"""
 cp run_client_cmds.py jobsclient
-cp run_server.py jobsserver
 cp run_server_cmds.py jobsserver-cmds
+cp run_server_queue.py jobsserver-queue
+cp run_user_settings.py jobsusersettings
+
 chmod +x jobsclient
-chmod +x jobsserver
 chmod +x jobsserver-cmds
+chmod +x jobsserver-queue
+chmod +x jobsusersettings
+
 mkdir -p {Path.home()}/bin
+
 cp -r jobs_queue {Path.home()}/bin
 cp jobsclient {Path.home()}/bin
-cp jobsserver {Path.home()}/bin
 cp jobsserver-cmds {Path.home()}/bin
+cp jobsserver-queue {Path.home()}/bin
+cp jobsusersettings {Path.home()}/bin
+
 """
 
 
@@ -38,7 +45,6 @@ setup(
     packages=["jobs_queue"],
     install_requires=[
         "easydict",
-        "gpustat",
         "filelock",
         "pandas",
     ],

@@ -34,7 +34,7 @@ class ReprClss(type):
 
 
 class GpuManager(metaclass=ReprClss):
-    "Uses gpustats to get the graphical memory statistics"
+    "Uses nvidia-smi to get the graphical memory statistics"
     USED_single: Dict[int, int] = dict()
     USED: int = None
     TOTAL_single: Dict[int, int] = dict()

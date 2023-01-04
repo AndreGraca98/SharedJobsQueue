@@ -28,8 +28,7 @@ operations = EDict(
 
 
 try:
-    sys.path.insert(0, "jobs_queue")
-    from jobs_queue.jobs_table import JobsTable, kills, not_implemented, show_info
+    from .jobs_table import JobsTable, kills, not_implemented, show_info
 
     callable_operations = dict(
         show=JobsTable.show,

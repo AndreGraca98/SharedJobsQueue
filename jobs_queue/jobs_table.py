@@ -3,7 +3,6 @@ import datetime
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from tkinter.messagebox import NO
 from typing import Any, List, Union
 
 import pandas as pd
@@ -23,14 +22,9 @@ JOBS_TABLE_FILENAME.parent.mkdir(mode=0o770, parents=True, exist_ok=True)
 
 lock = FileLock(f"{JOBS_TABLE_FILENAME}.lock")
 
-try:
-    from gpu_memory import GpuManager
-    from jobs import Priority, State, get_job_repr
-    from user_settings import get_user_paths, read_settings
-except ModuleNotFoundError:
-    from .gpu_memory import GpuManager
-    from .jobs import Priority, State, get_job_repr
-    from .user_settings import get_user_paths, read_settings
+from .gpu_memory import GpuManager
+from .jobs import Priority, State, get_job_repr
+from .user_settings import get_user_paths
 
 __all__ = ["JOBS_TABLE_FILENAME", "JobsTable"]
 

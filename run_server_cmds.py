@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-
-from sftpserver import main_server
+from jobs_queue.server_cmds import main as main_server_cmds
 
 if __name__ == "__main__":
-    main_server()
+    main_server_cmds()

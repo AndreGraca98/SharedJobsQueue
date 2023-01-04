@@ -11,22 +11,14 @@ from multiprocessing import Process
 from pathlib import Path
 from typing import Union
 
-try:
-    from gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
-    from jobs import State as JobState
-    from jobs import get_job_repr
-    from jobs_table import JOBS_TABLE_FILENAME, JobsTable
-    from server_args import get_args
-    from tools import ftext
-except ModuleNotFoundError:
-    from .gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
-    from .jobs import State as JobState
-    from .jobs import get_job_repr
-    from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
-    from .server_args import get_args
-    from .tools import ftext
+from .gpu_memory import GpuManager, GpuMemoryOutOfRange, wait_for_free_space
+from .jobs import State as JobState
+from .jobs import get_job_repr
+from .jobs_table import JOBS_TABLE_FILENAME, JobsTable
+from .server_args import get_args
+from .tools import ftext
 
-__all__ = ["main_server"]
+__all__ = ["main"]
 
 
 class State:
@@ -179,7 +171,7 @@ def run_server(sleep_time: int = 60):
             )
 
 
-def main_server():
+def main():
     args = get_args()
     sleep_time = args.time
     nthreads = args.threads
@@ -197,10 +189,6 @@ def main_server():
 
     except KeyboardInterrupt:
         pass
-
-
-if __name__ == "__main__":
-    main_server()
 
 
 # ENDFILE

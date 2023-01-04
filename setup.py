@@ -47,6 +47,7 @@ setup(
         "easydict",
         "filelock",
         "pandas",
+        "psutil"
     ],
     cmdclass={
         "install": PostInstallCommand,

@@ -265,7 +265,7 @@ class JobsTable:
 
     @staticmethod
     @lock
-    def unpause(args: argparse.Namespace):
+    def resume(args: argparse.Namespace):
         op: str = args.op
         verbose: int = args.verbose
         if op not in ["ids", "priority", "all"]:
@@ -352,6 +352,40 @@ class JobsTable:
         JobsTable.write(df_wo_state)
 
         return msg
+
+    @staticmethod
+    @lock
+    def retry(args: argparse.Namespace):
+        # return args
+        id: int = args.id
+        user_login: str = args.extra_kwargs["user_login"]
+
+        if id not in JobsTable.get_jobs_ids():
+            return f"The id={id} is not a valid job id. Expected: {JobsTable.get_jobs_ids()}"
+
+        df = JobsTable.read()
+
+        job = JobsTable.get_job(id)
+
+        if not job.state.isin([State.FINISHED.value, State.ERROR.value]).values[0]:
+            return f"Job {id} is not yet finished..."
+
+        if job.user.values[0] != user_login:
+            return f"Only {job.user.values[0]} can retry this job..."
+
+        new_args = argparse.Namespace(
+            command=[job.command.values[0]],
+            priority=int(job.priority.values[0]),
+            gpu_mem=job.gpu_mem.values[0],
+            verbose=1,
+            envname=job.env_path.values[0],
+            working_dir=job.working_dir.values[0],
+            extra_kwargs=dict(user_login=user_login),
+        )
+
+        msg = JobsTable.add(new_args)
+
+        return f"Retrying {get_job_repr(job.values)}\n{msg}"
 
     # ================================================================= #
     # ================================================================= #

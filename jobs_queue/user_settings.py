@@ -1,4 +1,5 @@
 import argparse
+import datetime
 import json
 import os
 import pwd
@@ -59,7 +60,7 @@ def create_new_user_settings(username: str) -> USER_SETTINGS:
 
     uhome = get_home_path(username)  # User home path
     usettings = dict()
-    usettings["base"] = get_user_env_and_wdir_paths(username, "base", uhome)
+    # usettings["base"] = get_user_env_and_wdir_paths(username, "base", uhome)
     for env in get_available_conda_envs(username):
         usettings[env.stem] = get_user_env_and_wdir_paths(username, env, uhome)
 
@@ -144,11 +145,45 @@ def get_user_paths(username: str, envname: str) -> Dict[str, str]:
     """Get env path and associated working dir for a user"""
     all_paths = read_settings()
 
-    return all_paths[username][envname]
+    if not Path(envname).exists():
+        return all_paths[username][envname]
+
+    for k, v in all_paths[username].items():
+        if v["env_path"] == envname:
+            return v
+
+    raise ValueError
+
+
+def info(args):
+    settings_file = JOBS_TABLE_FILENAME.parent / "USER_SETTINGS.json"
+
+    pholder = " --- "
+    if settings_file.exists():
+        mtime = datetime.datetime.fromtimestamp(settings_file.stat().st_mtime)
+        mode = settings_file.stat().st_mode
+        size = settings_file.stat().st_size
+    else:
+        mtime = pholder
+        mode = pholder
+        size = pholder
+
+    msg = f"""User Settings:
+  dir: {settings_file.parent}
+  filename: {settings_file}
+  exists: {settings_file.exists()}
+  mode: {mode}
+  modified: {mtime}
+  size: {size} B
+"""
+
+    print(msg)
 
 
 def get_parser():
     parser = argparse.ArgumentParser()
+    parser.set_defaults(operation=info)
+
     subparsers = parser.add_subparsers()
 
     parser_add = subparsers.add_parser("show")

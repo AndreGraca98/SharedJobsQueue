@@ -18,7 +18,7 @@ operations = EDict(
     remove="remove",
     update="update",
     pause="pause",
-    unpause="unpause",
+    resume="resume",
     clear="clear",
     clear_state="clear_state",
     kill="kill",
@@ -36,11 +36,12 @@ try:
         remove=JobsTable.remove,
         update=JobsTable.update,
         pause=JobsTable.pause,
-        unpause=JobsTable.unpause,
+        resume=JobsTable.resume,
         clear=JobsTable.clear,
         clear_state=JobsTable.clear_state,
         kill=kills,
-        retry=not_implemented,
+        retry=JobsTable.retry,
+        # retry=not_implemented,
         info=show_info,
     )
     assert callable_operations.keys() == operations.keys()
@@ -127,7 +128,7 @@ class MessageABC(ABC):
     def _read(self):
         try:
             # Should be ready to read
-            data = self.sock.recv(4096)
+            data = self.sock.recv(int(2**15))
         except BlockingIOError:
             # Resource temporarily unavailable (errno EWOULDBLOCK)
             pass

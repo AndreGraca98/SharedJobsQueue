@@ -152,7 +152,7 @@ def get_client_parser():
         parse_verbose(parser=parser_update)
 
     # Pause/UnPause
-    def add_subparser_queue_pause_unpause(parser):
+    def add_subparser_queue_pause_resume(parser):
         op = parser.prog.split()[~0]
 
         subparser_pause = parser.add_subparsers(
@@ -190,20 +190,20 @@ def get_client_parser():
     # Pause
     def add_subparser_queue_pause(subparser):
         parser_pause = subparser.add_parser("pause", help="Pause tasks from the queue")
-        add_subparser_queue_pause_unpause(parser_pause)
+        add_subparser_queue_pause_resume(parser_pause)
 
         parser_pause.set_defaults(operation=operations.pause)
         parse_verbose(parser=parser_pause)
 
     # Unpause
-    def add_subparser_queue_unpause(subparser):
-        parser_pause = subparser.add_parser(
-            "unpause", help="Unpause tasks from the queue"
+    def add_subparser_queue_resume(subparser):
+        parser_resume = subparser.add_parser(
+            "resume", help="Resume tasks from the queue"
         )
-        add_subparser_queue_pause_unpause(parser_pause)
+        add_subparser_queue_pause_resume(parser_resume)
 
-        parser_pause.set_defaults(operation=operations.unpause)
-        parse_verbose(parser=parser_pause)
+        parser_resume.set_defaults(operation=operations.resume)
+        parse_verbose(parser=parser_resume)
 
     # Clear
     def add_subparser_queue_clear(subparser):
@@ -254,7 +254,7 @@ def get_client_parser():
     add_subparser_queue_remove(subparser)
     add_subparser_queue_update(subparser)
     add_subparser_queue_pause(subparser)
-    add_subparser_queue_unpause(subparser)
+    add_subparser_queue_resume(subparser)
     add_subparser_queue_clear(subparser)
     add_subparser_queue_clear_state(subparser)
     add_subparser_queue_info(subparser)

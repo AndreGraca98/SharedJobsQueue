@@ -8,6 +8,7 @@ scripts with different priority levels. Uses subprocess.Popen to run the command
 - [Job queues](#job-queues)
   - [Requirements](#requirements)
   - [Environment](#environment)
+  - [Run the commands server](#run-the-commands-server)
   - [Run the server (OUTDATED)](#run-the-server-outdated)
   - [Run the client (OUTDATED)](#run-the-client-outdated)
     - [1. Show jobs](#1-show-jobs)
@@ -46,12 +47,18 @@ source ~/.profile
 
 ```
 
+## Run the commands server
+
+```bash
+jobsserver-cmds
+```
+
 ## Run the server (OUTDATED)
 
 [JobsServer](/jobs_queue/server.py#L126)
 
 ```bash
-JobsServer [TIME_IN_SECONDS] --threads [THREADS_NUMBER]
+sudo /home/aime/anaconda3/envs/jobsqueue/bin/python bin/run_server_queue.py  [TIME_IN_SECONDS] --threads [THREADS_NUMBER]
 ```
 
 ```text

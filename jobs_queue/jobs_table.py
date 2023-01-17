@@ -64,8 +64,8 @@ def kills(args):
             child.kill()
         parent.kill()
         return f"Killed job with id={id}"
-    except:  # FIXME: specify the kill error
-        return f"Failed to kill job with id={id}"
+    except Exception as e:  # FIXME: specify the kill error
+        return f"Failed to kill job with id={id}\n\n{e}"
 
 
 def show_info(*args, **kwargs):
